@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>슈고상회</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    .container {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 60px;
+    }
+    .link {
+      display: block;
+      text-decoration: none;
+      color: #fff;
+    }
+    .link img {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(255,255,255,0.15);
+      transition: transform 0.3s ease;
+    }
+    .link img:hover {
+      transform: scale(1.15);
+    }
+    .label {
+      margin-top: 15px;
+      font-size: 1.2em;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 600px) {
+      .container { gap: 80px; }
+      .link img { width: 120px; height: 120px; border-radius: 25px; }
+      .label { font-size: 1em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="https://open.kakao.com/o/gg3LUYhi" class="link" target="_blank" rel="noopener noreferrer">
+      <img src="kakaotalk-icon.png" alt="카카오톡 오픈채팅">
+      <div class="label">카카오톡 오픈채팅</div>
+    </a>
+    
+    <a href="https://discord.gg/J6XtmRg4" class="link" target="_blank" rel="noopener noreferrer">
+      <img src="discord-icon.png" alt="디스코드">
+      <div class="label">디스코드 서버</div>
+    </a>
+  </div>
+</body>
+</html>
