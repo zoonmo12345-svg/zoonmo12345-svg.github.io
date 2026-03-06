@@ -19,8 +19,51 @@
       text-align: center;
       display: flex;
       flex-direction: column;
-      gap: 60px;
+      align-items: center;
+      gap: 55px;
+      max-width: 860px;
+      width: 100%;
+      padding: 0 20px;
     }
+
+    /* 홍보 영상 */
+    .promo {
+      width: 100%;
+    }
+    .promo-title {
+      font-size: 2.1em;
+      font-weight: 700;
+      margin-bottom: 18px;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #ffffff, #cccccc);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #111;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(255,255,255,0.12);
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* 아이콘 가로 정렬 */
+    .links {
+      display: flex;
+      justify-content: center;
+      gap: 110px;
+      width: 100%;
+    }
+
     .link {
       display: block;
       text-decoration: none;
@@ -43,24 +86,46 @@
       opacity: 0.8;
     }
 
+    /* 모바일 */
     @media (max-width: 600px) {
-      .container { gap: 80px; }
-      .link img { width: 120px; height: 120px; border-radius: 25px; }
+      .container { gap: 50px; padding: 0 15px; }
+      .promo-title { font-size: 1.7em; }
+      .links { gap: 55px; }
+      .link img { width: 115px; height: 115px; border-radius: 24px; }
       .label { font-size: 1em; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <a href="https://open.kakao.com/o/gg3LUYhi" class="link" target="_blank" rel="noopener noreferrer">
-      <img src="kakaotalk-icon.png" alt="카카오톡 오픈채팅">
-      <div class="label">카카오톡 오픈채팅</div>
-    </a>
     
-    <a href="https://discord.gg/v2vCwWvA62" class="link" target="_blank" rel="noopener noreferrer">
-      <img src="discord-icon.png" alt="디스코드">
-      <div class="label">디스코드 서버</div>
-    </a>
+    <!-- 홍보 유튜브 -->
+    <div class="promo">
+      <div class="promo-title">홍보영상 보러가기</div>
+      <div class="video-wrapper">
+        <iframe 
+          src="https://www.youtube.com/embed/SdYI7jp3-tI" 
+          title="아이온2 슈고상회 레기온 이라거~" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </div>
+
+    <!-- 가로 아이콘 -->
+    <div class="links">
+      <a href="https://open.kakao.com/o/gg3LUYhi" class="link" target="_blank" rel="noopener noreferrer">
+        <img src="kakaotalk-icon.png" alt="카카오톡 오픈채팅">
+        <div class="label">카카오톡 오픈채팅</div>
+      </a>
+     
+      <a href="https://discord.gg/v2vCwWvA62" class="link" target="_blank" rel="noopener noreferrer">
+        <img src="discord-icon.png" alt="디스코드">
+        <div class="label">디스코드 서버</div>
+      </a>
+    </div>
+
   </div>
 </body>
 </html>
