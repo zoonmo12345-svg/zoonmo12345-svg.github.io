@@ -291,7 +291,7 @@
       let dummy = new Audio(); dummy.play().catch(e=>{});
     }
 
-    // 3. 디버그 팝업 로직 (비밀번호 로직 삭제)
+    // 3. 디버그 팝업 로직
     function openDebug() {
       document.getElementById('debugModal').classList.add('show');
       document.getElementById('modalOverlay').classList.add('show');
@@ -300,28 +300,38 @@
       document.getElementById('debugModal').classList.remove('show');
       document.getElementById('modalOverlay').classList.remove('show');
     }
+
+    // 4. 오디오 재생 및 큐 시스템 (Flat 배열 병합 방식으로 완전 개편)
+    let playQueue = [];
+    let isPlaying = false;
+
     function testPlay(seq) {
-      sequenceQueue.push(seq);
+      playQueue.push(...seq); // 들어온 사운드 배열을 평탄화해서 큐에 밀어넣음
       if (!isPlaying) playNext();
     }
 
-    // 4. 오디오 재생 및 큐 시스템
-    let sequenceQueue = [];
-    let currentSequence = [];
-    let isPlaying = false;
-
     function playNext() {
-      if (currentSequence.length === 0) {
-        if (sequenceQueue.length === 0) { isPlaying = false; return; }
-        currentSequence = sequenceQueue.shift();
+      if (playQueue.length === 0) {
+        isPlaying = false;
+        return;
       }
       isPlaying = true;
-      let file = currentSequence.shift();
+      let file = playQueue.shift();
       let audio = new Audio('sound/' + file + '.mp3');
       audio.volume = masterVol;
-      audio.onended = () => { playNext(); };
-      audio.onerror = (e) => { console.error('사운드 에러:', file); playNext(); };
-      audio.play().catch(e => { console.error('재생 막힘:', e); playNext(); });
+      
+      // 더블 트리거(중복 실행) 방지용 락
+      let handled = false;
+      const next = () => {
+        if (!handled) {
+          handled = true;
+          playNext();
+        }
+      };
+
+      audio.onended = next;
+      audio.onerror = (e) => { console.error('사운드 에러:', file); next(); };
+      audio.play().catch(e => { console.error('재생 막힘:', e); next(); });
     }
 
     // 5. 알람 체크 및 Web Worker
@@ -383,9 +393,10 @@
         });
       }
 
+      // 겹치는 시간이 있으면 우선순위 정렬 후 1차원 배열로 모두 합침
       if (triggered.length > 0) {
         triggered.sort((a, b) => a.priority - b.priority);
-        triggered.forEach(t => { sequenceQueue.push(t.seq); });
+        triggered.forEach(t => { playQueue.push(...t.seq); });
         if (!isPlaying) playNext();
       }
     }
