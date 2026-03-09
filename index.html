@@ -11,7 +11,7 @@
   <link rel="shortcut icon" href="/shugoicon.ico" type="image/x-icon">
 
   <style>
-    /* 전체 레이아웃 (PC 기준 좌/우 분할) */
+    /* 전체 레이아웃 */
     body {
       margin: 0; padding: 0;
       background: #000; color: #fff;
@@ -21,7 +21,20 @@
       overflow: hidden;
     }
 
-    /* --- 좌측 알리미 패널 CSS --- */
+    /* --- 슬라이딩 패널 래퍼 --- */
+    .panel-wrapper {
+      position: fixed;
+      top: 0;
+      left: -340px; /* 기본적으로 좌측에 숨김 */
+      height: 100vh;
+      z-index: 100;
+      transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* 부드러운 슬라이딩 */
+    }
+    .panel-wrapper.open {
+      left: 0; /* 탭 클릭 시 튀어나옴 */
+    }
+
+    /* 좌측 알리미 패널 CSS */
     .left-panel {
       width: 340px;
       height: 100%;
@@ -33,10 +46,53 @@
       flex-direction: column;
       gap: 20px;
       box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-      z-index: 10;
       overflow-y: auto;
     }
     
+    /* 꼬리표 (가죽 택 모양 탭) */
+    .toggle-tab {
+      position: absolute;
+      top: 50%;
+      right: -42px; /* 패널 바깥으로 돌출 */
+      width: 42px;
+      height: 150px;
+      background: #252530;
+      border: 1px solid #3a3a45;
+      border-left: none;
+      border-radius: 0 16px 16px 0; /* 우측만 둥글게 */
+      transform: translateY(-50%);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 5px 0 10px rgba(0,0,0,0.4);
+      color: #ddd;
+      font-weight: 800;
+      font-size: 0.95rem;
+      writing-mode: vertical-rl; /* 세로 쓰기 */
+      text-orientation: upright;
+      letter-spacing: 2px;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+    }
+    .toggle-tab:hover {
+      background: #ff4757;
+      color: #fff;
+    }
+    /* 가죽 택 펀치홀 디테일 */
+    .toggle-tab::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 6px;
+      width: 6px;
+      height: 6px;
+      background: #000;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2);
+    }
+
     /* 타이틀 및 테스트 버튼 영역 */
     .title-area {
       display: flex;
@@ -46,46 +102,20 @@
       border-bottom: 1px solid #2c2c35;
       padding-bottom: 10px;
     }
-    .title-text {
-      font-size: 1.25rem;
-      font-weight: 800;
-    }
+    .title-text { font-size: 1.25rem; font-weight: 800; }
     .test-launcher {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      transition: transform 0.2s;
+      display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s;
     }
     .test-launcher:hover { transform: scale(1.1); }
-    .test-label {
-      font-size: 0.65rem;
-      color: #ff4757;
-      font-weight: bold;
-      margin-bottom: 3px;
-    }
+    .test-label { font-size: 0.65rem; color: #ff4757; font-weight: bold; margin-bottom: 3px; }
     .bell-icon { font-size: 1.3rem; }
 
     /* 볼륨 조절 */
     .vol-area {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      background: #22222a;
-      padding: 12px 15px;
-      border-radius: 8px;
+      display: flex; align-items: center; gap: 15px; background: #22222a; padding: 12px 15px; border-radius: 8px;
     }
-    .vol-label {
-      font-size: 0.85rem;
-      font-weight: bold;
-      color: #bbb;
-      white-space: nowrap;
-    }
-    input[type="range"] {
-      flex: 1;
-      accent-color: #ff4757;
-      cursor: pointer;
-    }
+    .vol-label { font-size: 0.85rem; font-weight: bold; color: #bbb; white-space: nowrap; }
+    input[type="range"] { flex: 1; accent-color: #ff4757; cursor: pointer; }
     
     /* 시간 옵션 */
     .options { display: flex; gap: 10px; }
@@ -116,7 +146,8 @@
 
     /* --- 우측(메인) 네 원본 컨텐츠 CSS --- */
     .main-content {
-      flex: 1;
+      width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -167,7 +198,7 @@
     /* --- 모바일 해상도 대응 (알림 패널 숨김) --- */
     @media (max-width: 800px) {
       body { display: block; overflow: auto; }
-      .left-panel { display: none; }
+      .panel-wrapper { display: none; }
       .main-content { min-height: 100vh; padding: 40px 0; }
       .container { gap: 50px; padding: 0 15px; }
       .promo-title { font-size: 1.7em; }
@@ -179,32 +210,36 @@
 </head>
 <body>
 
-  <div class="left-panel">
-    
-    <div class="title-area">
-      <div class="title-text">컨텐츠 알리미 버튼</div>
-      <div class="test-launcher" onclick="openDebug()">
-        <span class="test-label">[사운드 테스트]</span>
-        <span class="bell-icon">🔔</span>
+  <div class="panel-wrapper" id="panelWrapper">
+    <div class="left-panel">
+      
+      <div class="title-area">
+        <div class="title-text">컨텐츠 알리미 버튼</div>
+        <div class="test-launcher" onclick="openDebug()">
+          <span class="test-label">[사운드 테스트]</span>
+          <span class="bell-icon">🔔</span>
+        </div>
+      </div>
+      
+      <div class="vol-area">
+        <span class="vol-label">사운드 크기</span>
+        <input type="range" id="volSlider" min="0" max="100" value="50" oninput="setMasterVolume(this.value)" onmouseup="playBeepTest()">
+      </div>
+
+      <div class="options">
+        <button class="opt-btn" id="btn_10m" onclick="toggleOpt('10m')">10분 전에 알림</button>
+        <button class="opt-btn" id="btn_5m" onclick="toggleOpt('5m')">5분 전에 알림</button>
+      </div>
+
+      <div class="btn-list">
+        <button class="content-btn" id="btn_festa" onclick="toggleContent('festa')">슈고페스타</button>
+        <button class="content-btn" id="btn_black" onclick="toggleContent('black')">검은구름 무역단</button>
+        <button class="content-btn" id="btn_sigong" onclick="toggleContent('sigong')">시공의 균열</button>
+        <button class="content-btn" id="btn_artifact" onclick="toggleContent('artifact')">아티펙트 점령전</button>
       </div>
     </div>
     
-    <div class="vol-area">
-      <span class="vol-label">사운드 크기</span>
-      <input type="range" id="volSlider" min="0" max="100" value="50" oninput="setMasterVolume(this.value)" onmouseup="playBeepTest()">
-    </div>
-
-    <div class="options">
-      <button class="opt-btn" id="btn_10m" onclick="toggleOpt('10m')">10분 전에 알림</button>
-      <button class="opt-btn" id="btn_5m" onclick="toggleOpt('5m')">5분 전에 알림</button>
-    </div>
-
-    <div class="btn-list">
-      <button class="content-btn" id="btn_festa" onclick="toggleContent('festa')">슈고페스타</button>
-      <button class="content-btn" id="btn_black" onclick="toggleContent('black')">검은구름 무역단</button>
-      <button class="content-btn" id="btn_sigong" onclick="toggleContent('sigong')">시공의 균열</button>
-      <button class="content-btn" id="btn_artifact" onclick="toggleContent('artifact')">아티펙트 점령전</button>
-    </div>
+    <div class="toggle-tab" onclick="togglePanel()">컨텐츠 알리미</div>
   </div>
 
   <div class="main-content">
@@ -253,6 +288,12 @@
   </div>
 
   <script>
+    // 0. 패널 슬라이딩 제어
+    function togglePanel() {
+      const panel = document.getElementById('panelWrapper');
+      panel.classList.toggle('open');
+    }
+
     // 1. 인터넷 KST 시간 동기화
     let timeOffset = 0;
     async function syncTime() {
@@ -301,11 +342,15 @@
       document.getElementById('modalOverlay').classList.remove('show');
     }
 
-    // 4. 오디오 재생 및 큐 시스템 (Flat 배열 병합 방식)
+    // 4. 오디오 재생 및 큐 시스템 (Flat 배열 병합 방식 + 광클 방지)
     let playQueue = [];
     let isPlaying = false;
 
     function testPlay(seq) {
+      if (isPlaying) {
+        console.log("이미 재생 중이라거! 좀 기다려라거!");
+        return; 
+      }
       playQueue.push(...seq);
       if (!isPlaying) playNext();
     }
