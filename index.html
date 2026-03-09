@@ -301,12 +301,12 @@
       document.getElementById('modalOverlay').classList.remove('show');
     }
 
-    // 4. 오디오 재생 및 큐 시스템 (Flat 배열 병합 방식으로 완전 개편)
+    // 4. 오디오 재생 및 큐 시스템 (Flat 배열 병합 방식)
     let playQueue = [];
     let isPlaying = false;
 
     function testPlay(seq) {
-      playQueue.push(...seq); // 들어온 사운드 배열을 평탄화해서 큐에 밀어넣음
+      playQueue.push(...seq);
       if (!isPlaying) playNext();
     }
 
@@ -320,7 +320,6 @@
       let audio = new Audio('sound/' + file + '.mp3');
       audio.volume = masterVol;
       
-      // 더블 트리거(중복 실행) 방지용 락
       let handled = false;
       const next = () => {
         if (!handled) {
@@ -368,6 +367,11 @@
             else if (offset === 5) triggered.push({ priority: 2, seq: ['beep_sound', '1_festa_A', '5min_A', '1_festa_B'] });
           }
         });
+        
+        // 정시 알림 2분 뒤 (17분, 47분) 추가 재생 조건
+        if (min === 17 || min === 47) {
+          triggered.push({ priority: 2, seq: ['beep_sound', '1min_shugo'] });
+        }
       }
 
       if (activeContents.black) {
@@ -393,7 +397,6 @@
         });
       }
 
-      // 겹치는 시간이 있으면 우선순위 정렬 후 1차원 배열로 모두 합침
       if (triggered.length > 0) {
         triggered.sort((a, b) => a.priority - b.priority);
         triggered.forEach(t => { playQueue.push(...t.seq); });
@@ -401,7 +404,6 @@
       }
     }
 
-    // 워커(Worker)로 백그라운드 스로틀링 무효화
     const workerCode = `setInterval(() => { postMessage('tick'); }, 1000);`;
     const blob = new Blob([workerCode], { type: 'application/javascript' });
     const worker = new Worker(URL.createObjectURL(blob));
