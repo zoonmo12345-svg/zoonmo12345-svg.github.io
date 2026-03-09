@@ -5,93 +5,170 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>슈고상회</title>
   
-  <!-- 검색 결과에 뜰 설명문 (네이버·구글 요약에 이게 보임) -->
   <meta name="description" content="아이온2 파프니르서버 레기온, 슈고상회라거!!">
   
-  <!-- 파비콘 (네가 shugoicon.ico 로 업로드할 거라 가정) -->
   <link rel="icon" type="image/x-icon" href="/shugoicon.ico">
   <link rel="shortcut icon" href="/shugoicon.ico" type="image/x-icon">
 
   <style>
+    /* 전체 레이아웃 (PC 기준 좌/우 분할) */
     body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
-      color: #fff;
+      margin: 0; padding: 0;
+      background: #000; color: #fff;
       font-family: sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
     }
-    .container {
-      text-align: center;
+
+    /* --- 좌측 알리미 패널 CSS --- */
+    .left-panel {
+      width: 340px;
+      height: 100%;
+      background: #16161a;
+      border-right: 1px solid #2c2c35;
+      padding: 30px 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+      z-index: 10;
+      overflow-y: auto;
+    }
+    
+    /* 타이틀 및 테스트 버튼 영역 */
+    .title-area {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      border-bottom: 1px solid #2c2c35;
+      padding-bottom: 10px;
+    }
+    .title-text {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .test-launcher {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 55px;
-      max-width: 860px;
-      width: 100%;
-      padding: 0 20px;
+      cursor: pointer;
+      transition: transform 0.2s;
     }
-    /* 홍보 영상 */
-    .promo {
-      width: 100%;
+    .test-launcher:hover { transform: scale(1.1); }
+    .test-label {
+      font-size: 0.65rem;
+      color: #ff4757;
+      font-weight: bold;
+      margin-bottom: 3px;
     }
-    .promo-title {
-      font-size: 2.1em;
-      font-weight: 700;
-      margin-bottom: 18px;
-      letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #ffffff, #cccccc);
-      -webkit-background-clip: text;
-      color: transparent;
+    .bell-icon { font-size: 1.3rem; }
+
+    /* 볼륨 조절 */
+    .vol-area {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: #22222a;
+      padding: 12px 15px;
+      border-radius: 8px;
     }
-    .video-wrapper {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #111;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 15px 40px rgba(255,255,255,0.12);
+    .vol-label {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #bbb;
+      white-space: nowrap;
     }
-    .video-wrapper iframe {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
+    input[type="range"] {
+      flex: 1;
+      accent-color: #ff4757;
+      cursor: pointer;
     }
-    /* 아이콘 가로 정렬 */
-    .links {
+    
+    /* 시간 옵션 */
+    .options { display: flex; gap: 10px; }
+    .opt-btn {
+      flex: 1; padding: 12px 0; background: #2a2a35; border: 2px solid transparent;
+      color: #aaa; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;
+    }
+    .opt-btn.active { background: #1e2b22; color: #4CAF50; border-color: #4CAF50; }
+    
+    /* 컨텐츠 버튼 */
+    .btn-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .content-btn {
+      position: relative; padding: 20px; background: #252530; border: 1px solid #3a3a45;
+      border-radius: 12px; color: #ddd; font-size: 1.05rem; font-weight: 800; cursor: pointer; overflow: hidden;
+      transition: transform 0.25s cubic-bezier(0.68, -0.55, 0.26, 1.55), background 0.3s, color 0.3s, box-shadow 0.3s;
+    }
+    .content-btn:active { transform: scale(0.92); }
+    .content-btn.active {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #fff;
+      border-color: transparent; box-shadow: 0 5px 20px rgba(42, 82, 152, 0.6);
+    }
+    .content-btn::after {
+      content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); transform: skewX(-20deg);
+    }
+    .content-btn:hover::after { animation: shimmer 0.8s infinite; }
+    @keyframes shimmer { 100% { left: 200%; } }
+
+    /* --- 우측(메인) 네 원본 컨텐츠 CSS --- */
+    .main-content {
+      flex: 1;
       display: flex;
       justify-content: center;
-      gap: 110px;
-      width: 100%;
+      align-items: center;
+      overflow-y: auto;
+      position: relative;
     }
-    .link {
-      display: block;
-      text-decoration: none;
-      color: #fff;
+    .container {
+      text-align: center; display: flex; flex-direction: column; align-items: center;
+      gap: 55px; max-width: 860px; width: 100%; padding: 0 20px;
     }
+    .promo { width: 100%; }
+    .promo-title {
+      font-size: 2.1em; font-weight: 700; margin-bottom: 18px; letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #ffffff, #cccccc); -webkit-background-clip: text; color: transparent;
+    }
+    .video-wrapper {
+      position: relative; width: 100%; aspect-ratio: 16 / 9; background: #111;
+      border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(255,255,255,0.12);
+    }
+    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    .links { display: flex; justify-content: center; gap: 110px; width: 100%; }
+    .link { display: block; text-decoration: none; color: #fff; }
     .link img {
-      width: 160px;
-      height: 160px;
-      object-fit: contain;
-      border-radius: 30px;
-      box-shadow: 0 10px 30px rgba(255,255,255,0.15);
-      transition: transform 0.3s ease;
+      width: 160px; height: 160px; object-fit: contain; border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(255,255,255,0.15); transition: transform 0.3s ease;
     }
-    .link img:hover {
-      transform: scale(1.15);
+    .link img:hover { transform: scale(1.15); }
+    .label { margin-top: 15px; font-size: 1.2em; opacity: 0.8; }
+
+    /* 디버그 팝업 CSS */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 998; }
+    .modal-overlay.show { display: block; }
+    .modal {
+      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #1a1a24; padding: 30px; border-radius: 12px; border: 1px solid #444; z-index: 999; 
+      width: 340px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     }
-    .label {
-      margin-top: 15px;
-      font-size: 1.2em;
-      opacity: 0.8;
-    }
-    /* 모바일 */
-    @media (max-width: 600px) {
+    .modal::-webkit-scrollbar { width: 8px; }
+    .modal::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+    .modal::-webkit-scrollbar-track { background: #1a1a24; }
+    .modal.show { display: block; }
+    .modal h3 { margin-top: 0; color: #fff; text-align: center; margin-bottom: 20px; }
+    .test-btn { display: block; width: 100%; margin: 6px 0; padding: 10px; background: #2c2c3c; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+    .test-btn:hover { background: #3d3d52; }
+    .close-btn { background: #ff4757; margin-top: 20px; padding: 12px; font-size: 1rem; }
+    .close-btn:hover { background: #ff6b81; }
+
+    /* --- 모바일 해상도 대응 (알림 패널 숨김) --- */
+    @media (max-width: 800px) {
+      body { display: block; overflow: auto; }
+      .left-panel { display: none; }
+      .main-content { min-height: 100vh; padding: 40px 0; }
       .container { gap: 50px; padding: 0 15px; }
       .promo-title { font-size: 1.7em; }
       .links { gap: 55px; }
@@ -101,34 +178,223 @@
   </style>
 </head>
 <body>
-  <div class="container">
-   
-    <!-- 홍보 유튜브 -->
-    <div class="promo">
-      <div class="promo-title">홍보영상 보러가기</div>
-      <div class="video-wrapper">
-        <iframe
-          src="https://www.youtube.com/embed/SdYI7jp3-tI"
-          title="아이온2 슈고상회 레기온 이라거~"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allowfullscreen>
-        </iframe>
+
+  <div class="left-panel">
+    
+    <div class="title-area">
+      <div class="title-text">컨텐츠 알리미 버튼</div>
+      <div class="test-launcher" onclick="openDebug()">
+        <span class="test-label">[사운드 테스트]</span>
+        <span class="bell-icon">🔔</span>
       </div>
     </div>
-
-    <!-- 가로 아이콘 -->
-    <div class="links">
-      <a href="https://open.kakao.com/o/gg3LUYhi" class="link" target="_blank" rel="noopener noreferrer">
-        <img src="kakaotalk-icon.png" alt="카카오톡 오픈채팅">
-        <div class="label">카카오톡 오픈채팅</div>
-      </a>
     
-      <a href="https://discord.gg/v2vCwWvA62" class="link" target="_blank" rel="noopener noreferrer">
-        <img src="discord-icon.png" alt="디스코드">
-        <div class="label">디스코드 서버</div>
-      </a>
+    <div class="vol-area">
+      <span class="vol-label">사운드 크기</span>
+      <input type="range" id="volSlider" min="0" max="100" value="50" oninput="setMasterVolume(this.value)" onmouseup="playBeepTest()">
+    </div>
+
+    <div class="options">
+      <button class="opt-btn" id="btn_10m" onclick="toggleOpt('10m')">10분 전에 알림</button>
+      <button class="opt-btn" id="btn_5m" onclick="toggleOpt('5m')">5분 전에 알림</button>
+    </div>
+
+    <div class="btn-list">
+      <button class="content-btn" id="btn_festa" onclick="toggleContent('festa')">슈고페스타</button>
+      <button class="content-btn" id="btn_black" onclick="toggleContent('black')">검은구름 무역단</button>
+      <button class="content-btn" id="btn_sigong" onclick="toggleContent('sigong')">시공의 균열</button>
+      <button class="content-btn" id="btn_artifact" onclick="toggleContent('artifact')">아티펙트 점령전</button>
     </div>
   </div>
+
+  <div class="main-content">
+    <div class="container">
+      <div class="promo">
+        <div class="promo-title">홍보영상 보러가기</div>
+        <div class="video-wrapper">
+          <iframe src="https://www.youtube.com/embed/SdYI7jp3-tI" title="아이온2 슈고상회 레기온 이라거~" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
+
+      <div class="links">
+        <a href="https://open.kakao.com/o/gg3LUYhi" class="link" target="_blank" rel="noopener noreferrer">
+          <img src="kakaotalk-icon.png" alt="카카오톡 오픈채팅">
+          <div class="label">카카오톡 오픈채팅</div>
+        </a>
+        <a href="https://discord.gg/v2vCwWvA62" class="link" target="_blank" rel="noopener noreferrer">
+          <img src="discord-icon.png" alt="디스코드">
+          <div class="label">디스코드 서버</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeDebug()"></div>
+  <div class="modal" id="debugModal">
+    <h3>사운드 조합 테스트</h3>
+    
+    <button class="test-btn" onclick="testPlay(['beep_sound', '1_festa_A', '10min_A', '1_festa_B'])">슈고페스타 (10분전/A)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '1_festa_A', '5min_A', '1_festa_B'])">슈고페스타 (5분전/A)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '1_festa_A', '1_festa_C'])">슈고페스타 (정시)</button>
+
+    <button class="test-btn" onclick="testPlay(['beep_sound', '2_black_A', '10min_A', '2_black_B'])">검은구름 (10분전/A)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '2_black_A', '5min_A', '2_black_B'])">검은구름 (5분전/A)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '2_black_A', '2_black_C'])">검은구름 (정시)</button>
+
+    <button class="test-btn" onclick="testPlay(['beep_sound', '3_sigong_A', '10min_A', '3_sigong_B'])">시공의 균열 (10분전/A)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '3_sigong_A', '5min_A', '3_sigong_B'])">시공의 균열 (5분전/A)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '3_sigong_A', '3_sigong_C'])">시공의 균열 (정시)</button>
+
+    <button class="test-btn" onclick="testPlay(['beep_sound', '4_artifackt_A', '10min_B', '4_artifackt_B'])">아티펙트 (10분전/B)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '4_artifackt_A', '5min_B', '4_artifackt_B'])">아티펙트 (5분전/B)</button>
+    <button class="test-btn" onclick="testPlay(['beep_sound', '4_artifackt_A', '4_artifackt_C'])">아티펙트 (정시)</button>
+
+    <button class="test-btn close-btn" onclick="closeDebug()">닫기</button>
+  </div>
+
+  <script>
+    // 1. 인터넷 KST 시간 동기화
+    let timeOffset = 0;
+    async function syncTime() {
+      try {
+        const res = await fetch('https://worldtimeapi.org/api/timezone/Asia/Seoul');
+        const data = await res.json();
+        const serverTime = new Date(data.datetime).getTime();
+        const localTime = Date.now();
+        timeOffset = serverTime - localTime;
+        console.log("KST 동기화 완료. 오차:", timeOffset, "ms");
+      } catch(e) {
+        console.warn("시간 동기화 실패. 내장 PC 시간 사용.");
+      }
+    }
+    syncTime();
+    function getKST() { return new Date(Date.now() + timeOffset); }
+
+    // 2. 상태 관리
+    let masterVol = 0.5;
+    let opt = { '10m': false, '5m': false };
+    let activeContents = { festa: false, black: false, sigong: false, artifact: false };
+
+    function setMasterVolume(val) { masterVol = val / 100; }
+    function playBeepTest() {
+      let audio = new Audio('sound/beep_sound.mp3');
+      audio.volume = masterVol;
+      audio.play().catch(e => console.log(e));
+    }
+    function toggleOpt(type) {
+      opt[type] = !opt[type];
+      document.getElementById('btn_' + type).classList.toggle('active', opt[type]);
+    }
+    function toggleContent(id) {
+      activeContents[id] = !activeContents[id];
+      document.getElementById('btn_' + id).classList.toggle('active', activeContents[id]);
+      let dummy = new Audio(); dummy.play().catch(e=>{});
+    }
+
+    // 3. 디버그 팝업 로직 (비밀번호 로직 삭제)
+    function openDebug() {
+      document.getElementById('debugModal').classList.add('show');
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+    function closeDebug() {
+      document.getElementById('debugModal').classList.remove('show');
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+    function testPlay(seq) {
+      sequenceQueue.push(seq);
+      if (!isPlaying) playNext();
+    }
+
+    // 4. 오디오 재생 및 큐 시스템
+    let sequenceQueue = [];
+    let currentSequence = [];
+    let isPlaying = false;
+
+    function playNext() {
+      if (currentSequence.length === 0) {
+        if (sequenceQueue.length === 0) { isPlaying = false; return; }
+        currentSequence = sequenceQueue.shift();
+      }
+      isPlaying = true;
+      let file = currentSequence.shift();
+      let audio = new Audio('sound/' + file + '.mp3');
+      audio.volume = masterVol;
+      audio.onended = () => { playNext(); };
+      audio.onerror = (e) => { console.error('사운드 에러:', file); playNext(); };
+      audio.play().catch(e => { console.error('재생 막힘:', e); playNext(); });
+    }
+
+    // 5. 알람 체크 및 Web Worker
+    let lastCheckedMinute = -1;
+    function checkAlarms() {
+      const now = getKST();
+      const min = now.getMinutes();
+      if (min === lastCheckedMinute) return;
+      lastCheckedMinute = min; 
+
+      let triggered = []; 
+      let checks = [0];
+      if (opt['5m']) checks.push(5);
+      if (opt['10m']) checks.push(10);
+
+      if (activeContents.artifact) {
+        checks.forEach(offset => {
+          let t = new Date(now.getTime() + offset * 60000);
+          let day = t.getDay(); 
+          if ((day === 2 || day === 4 || day === 6) && t.getHours() === 21 && t.getMinutes() === 0) {
+            if (offset === 0) triggered.push({ priority: 1, seq: ['beep_sound', '4_artifackt_A', '4_artifackt_C'] });
+            else if (offset === 10) triggered.push({ priority: 1, seq: ['beep_sound', '4_artifackt_A', '10min_B', '4_artifackt_B'] });
+            else if (offset === 5) triggered.push({ priority: 1, seq: ['beep_sound', '4_artifackt_A', '5min_B', '4_artifackt_B'] });
+          }
+        });
+      }
+
+      if (activeContents.festa) {
+        checks.forEach(offset => {
+          let t = new Date(now.getTime() + offset * 60000);
+          if (t.getMinutes() === 15 || t.getMinutes() === 45) {
+            if (offset === 0) triggered.push({ priority: 2, seq: ['beep_sound', '1_festa_A', '1_festa_C'] });
+            else if (offset === 10) triggered.push({ priority: 2, seq: ['beep_sound', '1_festa_A', '10min_A', '1_festa_B'] });
+            else if (offset === 5) triggered.push({ priority: 2, seq: ['beep_sound', '1_festa_A', '5min_A', '1_festa_B'] });
+          }
+        });
+      }
+
+      if (activeContents.black) {
+        checks.forEach(offset => {
+          let t = new Date(now.getTime() + offset * 60000);
+          if (t.getMinutes() === 0) {
+            if (offset === 0) triggered.push({ priority: 3, seq: ['beep_sound', '2_black_A', '2_black_C'] });
+            else if (offset === 10) triggered.push({ priority: 3, seq: ['beep_sound', '2_black_A', '10min_A', '2_black_B'] });
+            else if (offset === 5) triggered.push({ priority: 3, seq: ['beep_sound', '2_black_A', '5min_A', '2_black_B'] });
+          }
+        });
+      }
+
+      if (activeContents.sigong) {
+        checks.forEach(offset => {
+          let t = new Date(now.getTime() + offset * 60000);
+          let h = t.getHours();
+          if ([2, 6, 10, 14, 18, 22].includes(h) && t.getMinutes() === 0) {
+            if (offset === 0) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '3_sigong_C'] });
+            else if (offset === 10) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '10min_A', '3_sigong_B'] });
+            else if (offset === 5) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '5min_A', '3_sigong_B'] });
+          }
+        });
+      }
+
+      if (triggered.length > 0) {
+        triggered.sort((a, b) => a.priority - b.priority);
+        triggered.forEach(t => { sequenceQueue.push(t.seq); });
+        if (!isPlaying) playNext();
+      }
+    }
+
+    // 워커(Worker)로 백그라운드 스로틀링 무효화
+    const workerCode = `setInterval(() => { postMessage('tick'); }, 1000);`;
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const worker = new Worker(URL.createObjectURL(blob));
+    worker.onmessage = function() { checkAlarms(); };
+  </script>
 </body>
 </html>
