@@ -434,7 +434,7 @@
         checks.forEach(offset => {
           let t = new Date(now.getTime() + offset * 60000);
           let h = t.getHours();
-          if ([2, 6, 10, 14, 18, 22].includes(h) && t.getMinutes() === 0) {
+          if ([2, 5, 8, 11, 14, 17, 20, 23].includes(h) && t.getMinutes() === 0) {
             if (offset === 0) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '3_sigong_C'] });
             else if (offset === 10) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '10min_A', '3_sigong_B'] });
             else if (offset === 5) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '5min_A', '3_sigong_B'] });
