@@ -406,7 +406,14 @@ a.kpi:hover { border-color: var(--line2); transform: translateY(-2px); }
 .g-name b { font-size: 16px; }
 .label { font-size: 12px; font-weight: 700; color: var(--mut); }
 .g-rooms { display: grid; gap: 6px; margin-top: 6px; }
-.g-room { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 8px; background: var(--bg); font-size: 13.5px; }
+.g-room { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 58px; padding: 8px 10px 8px 14px; border: 1px solid var(--line2); border-radius: 10px; background: var(--bg); font-size: 14.5px; text-align: left; }
+.g-room__t { display: grid; min-width: 0; }
+.g-room__t b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-room__t small { color: var(--mut); font-size: 12px; }
+.g-room em { flex: none; font-style: normal; font-weight: 800; font-size: 13px; padding: 8px 12px; border-radius: 8px; background: var(--gold); color: var(--gold-ink); }
+.g-room[disabled] em { background: var(--s3); color: var(--mut); }
+.g-rooms__no { padding: 14px 12px; border: 1px dashed var(--line2); border-radius: 10px; color: var(--mut); font-size: 13px; text-align: center; }
+.g-note { color: var(--mut); font-size: 12.5px; }
 .g-room:hover:not([disabled]) { border-color: var(--gold); }
 .g-room[disabled] { opacity: .5; }
 .g-players { display: grid; gap: 4px; }

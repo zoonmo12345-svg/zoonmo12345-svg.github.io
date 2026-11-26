@@ -50,7 +50,7 @@
 
     <section class="lp-game" id="lpGame" aria-label="미니게임 와르르 슈고">
       <div class="lp-game__in">
-        <div class="lp-game__h"><span>Mini game</span><h2>와르르 슈고</h2><p>가입 없이 바로 한 판. 방 만들고 링크 보내면 최대 5명이 같이 해.</p></div>
+        <div class="lp-game__h"><span>Mini game</span><h2>와르르 슈고</h2><p>가입 없이 바로 한 판. 대기 중인 방을 누르면 바로 들어가. 최대 5명.</p></div>
         <div id="lpGameBox"></div>
       </div>
     </section>

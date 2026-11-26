@@ -230,10 +230,11 @@
       const nameBox = me.member ? `<div class="g-name"><span class="label">내 이름</span><b class="vip">${esc(me.name)}</b></div>`
         : `<label class="field"><span>내 이름 (이 게임에서만 써)</span><input class="input" id="gname" maxlength="10" placeholder="${esc(me.def)}" value="${esc(me.name === me.def ? '' : me.name)}" ${room ? 'disabled' : ''}></label>`;
       if (!room) {
-        side.innerHTML = `<h3 class="pn__h">게임 시작</h3><div class="pn__b g-menu">${nameBox}${floorBox(true)}
+        side.innerHTML = `<h3 class="pn__h">대기 중인 방<span>${rooms.length}개</span></h3><div class="pn__b g-menu">${nameBox}
+          <div class="g-rooms">${rooms.length ? rooms.map(r => { const full = r.n >= MAX; return `<button class="g-room" data-code="${esc(r.code)}" ${full || r.playing ? 'disabled' : ''}><span class="g-room__t"><b>${esc(r.host)}의 방</b><small>${r.playing ? '게임 중' : full ? '꽉 참' : '기다리는 중'} · ${r.n}/${MAX}명</small></span><em>${r.playing || full ? '못 들어가' : '들어가기'}</em></button>`; }).join('') : '<p class="g-rooms__no">지금 대기 중인 방이 없어.<br>방을 만들면 여기에 떠서 누구나 눌러서 들어와.</p>'}</div>
           <button class="btn btn--gold btn--lg" id="mk" ${Games.online() ? '' : 'disabled'}>방 만들기</button>
-          <button class="btn btn--lg" id="so">혼자 연습 (봇 3마리)</button>
-          <div class="g-rooms"><span class="label">열린 방</span>${rooms.length ? rooms.map(r => `<button class="g-room" data-code="${esc(r.code)}" ${r.n >= MAX || r.playing ? 'disabled' : ''}><b>${esc(r.host)}의 방</b><span>${r.playing ? '게임 중' : r.n + '/' + MAX}</span></button>`).join('') : '<p class="mut">지금 열린 방이 없어. 방을 만들고 링크를 보내봐.</p>'}</div></div>`;
+          ${floorBox(true)}
+          <button class="btn btn--lg" id="so">혼자 연습 (봇 3마리)</button></div>`;
         const gn = $('#gname'); if (gn) gn.onchange = () => Games.setGuestName(gn.value);
         bindFloors();
         $('#mk').onclick = () => { if (gn) Games.setGuestName(gn.value); join(Games.newCode()); };
@@ -249,7 +250,7 @@
         ${playing ? '<p class="mut">게임 중이야.</p>' : host
           ? `<button class="btn btn--gold btn--lg" id="st" ${allReady ? '' : 'disabled'}>${ps.length === 1 ? '봇이랑 시작' : allReady ? '시작' : '다들 준비하면 시작'}</button>`
           : `<button class="btn ${mine && mine.ready ? '' : 'btn--gold'} btn--lg" id="rd">${mine && mine.ready ? '준비 취소' : '준비'}</button>`}
-        <button class="btn" id="cp">초대 링크 복사</button><button class="btn btn--plain" id="lv">방 나가기</button></div>`;
+        <p class="g-note">이 방은 '대기 중인 방'에 떠 있어. 다른 사람은 게임 화면에서 방을 누르면 바로 들어와.</p><button class="btn btn--plain" id="lv">방 나가기</button></div>`;
       bindFloors(() => room && room.update({ floors }));
       const st = $('#st'); if (st) st.onclick = () => {
         if (ps.length === 1) { solo(); return; }
@@ -257,7 +258,6 @@
         room.send({ t: 's', r, n: floors, seed }); startGame(r, false, floors, seed); announce();
       };
       const rd = $('#rd'); if (rd) rd.onclick = () => room.update({ ready: !(mine && mine.ready) });
-      $('#cp').onclick = async () => { const url = location.origin + location.pathname + '#/game/waru?room=' + room.code; try { await navigator.clipboard.writeText(url); toast('초대 링크를 복사했어'); } catch (e) { toast(url); } };
       $('#lv').onclick = leave;
     }
 
