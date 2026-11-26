@@ -23,6 +23,12 @@
 
   function render(view, ctx) {
     const C = window.SHUGO_CONFIG, esc = ctx.esc;
+    // 디스코드 · 카카오톡 큰 버튼
+    const DC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>';
+    const KK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/></svg>';
+    const socials = cls => `<div class="lp-socials ${cls}">
+      <a class="lp-soc lp-soc--dc" href="${esc(C.discord)}" target="_blank" rel="noopener"><span class="lp-soc__ic">${DC}</span><span class="lp-soc__tx"><small>음성 · 공지 · 모집</small><b>디스코드 들어오기</b></span>${arrow}</a>
+      <a class="lp-soc lp-soc--kk" href="${esc(C.kakao)}" target="_blank" rel="noopener"><span class="lp-soc__ic">${KK}</span><span class="lp-soc__tx"><small>가볍게 말 걸기</small><b>카카오톡 오픈채팅</b></span>${arrow}</a></div>`;
     view.innerHTML = `<div class="lp">
     <div class="lp-grain" aria-hidden="true"></div>
     <header class="lp-top">
@@ -40,7 +46,7 @@
           <i class="lp-cn lp-cn--1"></i><i class="lp-cn lp-cn--2"></i><i class="lp-cn lp-cn--3"></i><i class="lp-cn lp-cn--4"></i>
           <div class="lp-film__in"><iframe src="https://www.youtube.com/embed/${esc(C.youtubeId)}?rel=0" title="슈고상회 홍보영상" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
         </div>
-        <div class="lp-hero__f"><p>같이 뛸 데바 구한다거.</p><span><a href="${esc(C.discord)}" target="_blank" rel="noopener">디스코드</a><a href="${esc(C.kakao)}" target="_blank" rel="noopener">카카오톡</a></span></div>
+        ${socials('lp-socials--hero')}
       </div>
     </section>
 
@@ -60,7 +66,8 @@
           <h2>${words(END.h)}</h2>
           <p>${END.p}</p>
           <button class="lp-enter lp-enter--xl" data-enter data-magnet>입장하기 ${arrow}</button>
-          <div class="lp-end__sub"><a href="#/signup">상회원 가입</a><a href="${esc(C.discord)}" target="_blank" rel="noopener">디스코드</a><a href="${esc(C.kakao)}" target="_blank" rel="noopener">카카오톡</a></div>
+          <div class="lp-end__sub"><a href="#/signup">상회원 가입</a></div>
+          ${socials('lp-socials--end')}
         </div>
         <nav class="lp-steps" id="lpSteps" aria-hidden="true">${BEATS.map((b, i) => `<span><b>0${i + 1}</b>${b.en}</span>`).join('')}</nav>
         <div class="lp-prog"><i id="lpProg"></i></div>
