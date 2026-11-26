@@ -434,25 +434,21 @@ body.landing main > * { animation: none; }
 /* 디스코드 · 카카오톡 큰 버튼 */
 .lp-socials { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 .lp-socials--hero { margin-top: 34px; animation: lpFade .9s .9s var(--ease) both; }
-.lp-soc { position: relative; display: flex; align-items: center; gap: 16px; height: 84px; padding: 0 22px 0 14px; border-radius: 22px; color: var(--fg); transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
-.lp-soc--dc { --fg: #fff; --ic: rgba(255, 255, 255, .2); }
-.lp-soc--kk { --fg: #201b00; --ic: rgba(255, 255, 255, .5); }
-.lp-fur { position: absolute; left: -30px; top: -30px; pointer-events: none; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .45)); }
+.lp-soc { position: relative; display: flex; align-items: center; gap: 14px; height: 84px; padding: 0 22px 0 12px; border-radius: 26px; color: #3a220c; background: #d69654 url('../img/g-fur.webp') center / cover; transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
+.lp-fur { position: absolute; left: -30px; top: -30px; pointer-events: none; filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .4)); }
 .lp-soc > :not(.lp-fur) { position: relative; }
 .lp-soc:hover { transform: translateY(-6px) scale(1.02); }
 .lp-soc:active { transform: translateY(-1px) scale(.97); }
-.lp-soc__ic { width: 58px; height: 58px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--ic); transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); }
-.lp-soc__ic svg { width: 36px; height: 36px; }
-.lp-soc:hover .lp-soc__ic { transform: rotate(-10deg) scale(1.12); }
-.lp-soc__tx { display: grid; min-width: 0; text-align: left; }
-.lp-soc__tx small { font: 700 12.5px var(--sans); opacity: .75; }
-.lp-soc__tx b { font: 800 clamp(16px, 1.55vw, 22px) var(--disp); white-space: nowrap; }
-.lp-soc > svg { width: 22px; height: 22px; margin-left: auto; transition: transform .3s var(--ease); }
+.lp-soc__ic { width: 64px; height: 64px; flex: none; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(60, 30, 5, .45)); transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); }
+.lp-soc:hover .lp-soc__ic { transform: rotate(-8deg) scale(1.14); }
+.lp-soc__tx { display: grid; min-width: 0; text-align: left; padding: 6px 14px; border-radius: 14px; background: rgba(255, 246, 230, .78); }
+.lp-soc__tx small { font: 700 12px var(--sans); color: #7a5632; }
+.lp-soc__tx b { font: 800 clamp(16px, 1.5vw, 21px) var(--disp); white-space: nowrap; }
+.lp-soc > svg { width: 22px; height: 22px; margin-left: auto; padding: 0; color: #3a220c; transition: transform .3s var(--ease); }
 .lp-soc:hover > svg { transform: translateX(6px); }
 .lp-socials--end { margin-top: 34px; width: min(640px, 100%); }
 .lp-socials--end .lp-soc { height: 68px; border-radius: 16px; }
-.lp-socials--end .lp-soc__ic { width: 46px; height: 46px; border-radius: 12px; }
-.lp-socials--end .lp-soc__ic svg { width: 28px; height: 28px; }
+.lp-socials--end .lp-soc__ic { width: 52px; height: 52px; }
 
 .lp-fly { position: relative; height: 620vh; }
 .lp-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: #070504; }
@@ -556,8 +552,7 @@ body.landing main > * { animation: none; }
   .lp-cn { width: 24px; height: 24px; }
   .lp-socials { grid-template-columns: 1fr; gap: 30px; }
   .lp-soc { height: 72px; }
-  .lp-soc__ic { width: 50px; height: 50px; }
-  .lp-soc__ic svg { width: 30px; height: 30px; }
+  .lp-soc__ic { width: 56px; height: 56px; }
   .lp-beat, .lp-beat--r { grid-template-columns: 1fr; grid-template-rows: 1fr auto; align-items: end; padding: 76px 20px 64px; gap: 0; }
   .lp-beat--r .lp-beat__t { order: 0; justify-self: start; }
   .lp-beat__c { grid-row: 1; height: 42svh; align-self: end; }

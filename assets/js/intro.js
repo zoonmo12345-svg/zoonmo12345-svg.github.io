@@ -24,11 +24,9 @@
   function render(view, ctx) {
     const C = window.SHUGO_CONFIG, esc = ctx.esc;
     // 디스코드 · 카카오톡 큰 버튼
-    const DC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>';
-    const KK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 0 1-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z"/></svg>';
     const socials = cls => `<div class="lp-socials ${cls}">
-      <a class="lp-soc lp-soc--dc" href="${esc(C.discord)}" target="_blank" rel="noopener"><span class="lp-soc__ic">${DC}</span><span class="lp-soc__tx"><small>음성 · 공지 · 모집</small><b>디스코드 들어오기</b></span>${arrow}</a>
-      <a class="lp-soc lp-soc--kk" href="${esc(C.kakao)}" target="_blank" rel="noopener"><span class="lp-soc__ic">${KK}</span><span class="lp-soc__tx"><small>가볍게 말 걸기</small><b>카카오톡 오픈채팅</b></span>${arrow}</a></div>`;
+      <a class="lp-soc lp-soc--dc" href="${esc(C.discord)}" target="_blank" rel="noopener"><img class="lp-soc__ic" src="assets/img/g-ic-dc.webp" alt="" width="64" height="64"><span class="lp-soc__tx"><small>음성 · 공지 · 모집</small><b>디스코드 들어오기</b></span>${arrow}</a>
+      <a class="lp-soc lp-soc--kk" href="${esc(C.kakao)}" target="_blank" rel="noopener"><img class="lp-soc__ic" src="assets/img/g-ic-kk.webp" alt="" width="64" height="64"><span class="lp-soc__tx"><small>가볍게 말 걸기</small><b>카카오톡 오픈채팅</b></span>${arrow}</a></div>`;
     view.innerHTML = `<div class="lp">
     <div class="lp-grain" aria-hidden="true"></div>
     <header class="lp-top">
@@ -80,18 +78,17 @@
   }
 
 
-  // ── 털북숭이 버튼: 털을 한 올씩 그리고, 마우스가 지나가면 털이 밀려나며 흩날림 ──
-  const FUR = {
-    dc: { base: '#5865f2', fur: ['#6f7bf7', '#4955dc', '#8c96fa', '#3d49c9'], ear: '#aab1ff' },
-    kk: { base: '#fee500', fur: ['#fff06a', '#e8cd00', '#fff7a8', '#d4ba00'], ear: '#fff9c2' }
-  };
-  function fur(el, C) {
+  // ── 시바견 털 버튼 ──
+  // 몸통과 아이콘은 털 재질 그림(힉스필드 생성), 코드로는 테두리 솜털과 귀만 그림. 마우스가 지나가면 테두리 털이 살랑 밀림.
+  const SHIBA = { top: [214, 150, 84], bottom: [240, 214, 176], earIn: '#f7e4c8' };
+  function fur(el) {
     const PAD = 30, cv = document.createElement('canvas'), g = cv.getContext('2d');
     cv.className = 'lp-fur'; el.prepend(cv);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let W = 0, H = 0, strands = [], ears = [], mx = -999, my = -999, hot = false, raf = 0, t0 = 0, ruffle = 0;
     const rnd = (a, b) => a + Math.random() * (b - a);
-    const pick = a => a[Math.floor(Math.random() * a.length)];
+    const mix = (k, d) => { const c = SHIBA.top.map((v, i) => Math.round(Math.min(255, Math.max(0, v + (SHIBA.bottom[i] - v) * k + d)))); return `rgb(${c[0]},${c[1]},${c[2]})`; };
+    const tone = y => Math.min(1, Math.max(0, (y / H - .45) / .55));
 
     function build() {
       const r = el.getBoundingClientRect(); W = r.width; H = r.height;
@@ -99,36 +96,33 @@
       cv.width = (W + PAD * 2) * dpr; cv.height = (H + PAD * 2) * dpr;
       cv.style.width = (W + PAD * 2) + 'px'; cv.style.height = (H + PAD * 2) + 'px';
       g.setTransform(dpr, 0, 0, dpr, PAD * dpr, PAD * dpr);
-      strands = []; const R = Math.min(22, H / 2);
-      const add = (x, y, ang, len, a, w) => strands.push({ x, y, ang, len, a, w, c: pick(C.fur), b: 0, v: 0, ph: Math.random() * 6.28 });
-      // 귀 (위쪽 양 끝)
-      ears = [{ x: R + 10, y: 2, r: 15 }, { x: W - R - 10, y: 2, r: 15 }];
-      ears.forEach(e => { for (let a = Math.PI * 1.02; a < Math.PI * 1.98; a += .09) add(e.x + Math.cos(a) * e.r, e.y + Math.sin(a) * e.r, a + rnd(-.3, .3), rnd(6, 11), 1, 1.5); });
-      // 가장자리 털 (바깥으로 삐죽삐죽)
-      const step = 2.1;
-      for (let x = R; x <= W - R; x += step) { add(x, 0, -Math.PI / 2 + rnd(-.45, .45), rnd(7, 14), 1, 1.5); add(x, H, Math.PI / 2 + rnd(-.45, .45), rnd(7, 14), 1, 1.5); }
-      for (let y = R; y <= H - R; y += step) { add(0, y, Math.PI + rnd(-.45, .45), rnd(7, 14), 1, 1.5); add(W, y, rnd(-.45, .45), rnd(7, 14), 1, 1.5); }
-      [[R, R, Math.PI, 1.5 * Math.PI], [W - R, R, 1.5 * Math.PI, 2 * Math.PI], [W - R, H - R, 0, .5 * Math.PI], [R, H - R, .5 * Math.PI, Math.PI]].forEach(([cx, cy, a0, a1]) => {
-        for (let a = a0; a < a1; a += step / R) add(cx + Math.cos(a) * R, cy + Math.sin(a) * R, a + rnd(-.45, .45), rnd(7, 14), 1, 1.5);
-      });
-      // 몸통 털 (아래로 누운 결)
-      const n = Math.round(W * H / 55);
-      for (let i = 0; i < n; i++) add(rnd(4, W - 4), rnd(2, H - 6), Math.PI / 2 + rnd(-.7, .7), rnd(6, 11), rnd(.28, .6), 1.2);
+      strands = []; const R = Math.min(26, H / 2);
+      const add = (x, y, ang, len, a) => strands.push({ x, y, ang, len, a, c: mix(tone(y), rnd(-16, 18)), b: 0, v: 0, ph: Math.random() * 6.28 });
+      ears = [{ x: R + 18, d: -1 }, { x: W - R - 18, d: 1 }];
+      // 테두리 솜털: 짧고 가늘게 여러 겹 (안쪽에서 시작해서 살짝만 밖으로)
+      const J = () => rnd(-.3, .3), L = () => rnd(3, 6.5), IN = () => rnd(0, 2.5);
+      for (let layer = 0; layer < 3; layer++) {
+        const step = 1.05 + layer * .15;
+        for (let x = R; x <= W - R; x += step) { add(x, IN(), -Math.PI / 2 + J(), L(), rnd(.55, .95)); add(x, H - IN(), Math.PI / 2 + J(), L(), rnd(.55, .95)); }
+        for (let y = R; y <= H - R; y += step) { add(IN(), y, Math.PI + J(), L(), rnd(.55, .95)); add(W - IN(), y, J(), L(), rnd(.55, .95)); }
+        [[R, R, Math.PI, 1.5 * Math.PI], [W - R, R, 1.5 * Math.PI, 2 * Math.PI], [W - R, H - R, 0, .5 * Math.PI], [R, H - R, .5 * Math.PI, Math.PI]].forEach(([cx, cy, a0, a1]) => {
+          for (let a = a0; a < a1; a += step / R) { const rr = R - IN(); add(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, a + J(), L(), rnd(.55, .95)); }
+        });
+      }
       draw(0);
     }
     function draw(t) {
       g.clearRect(-PAD, -PAD, W + PAD * 2, H + PAD * 2);
-      const wig = hot || ruffle > 0 ? Math.sin(t / 90) * 5 : 0;
-      ears.forEach((e, i) => { g.save(); g.translate(e.x, e.y + 8); g.rotate((i ? 1 : -1) * wig * Math.PI / 180); g.translate(-e.x, -e.y - 8);
-        g.fillStyle = C.base; g.beginPath(); g.arc(e.x, e.y, e.r, 0, 6.29); g.fill();
-        g.fillStyle = C.ear; g.beginPath(); g.arc(e.x, e.y + 1, e.r * .52, 0, 6.29); g.fill(); g.restore(); });
-      const R = Math.min(22, H / 2);
-      g.fillStyle = C.base; g.beginPath(); g.roundRect(0, 0, W, H, R); g.fill();
-      g.lineCap = 'round';
+      const wig = hot || ruffle > 0 ? Math.sin(t / 110) * 6 : 0;
+      ears.forEach(e => { g.save(); g.translate(e.x, 5); g.rotate(e.d * (8 + wig) * Math.PI / 180);
+        g.shadowColor = mix(0, -6); g.shadowBlur = 4;
+        g.fillStyle = mix(0, -6); g.beginPath(); g.moveTo(-17, 3); g.quadraticCurveTo(-5, -20, 0, -27); g.quadraticCurveTo(5, -20, 17, 3); g.closePath(); g.fill();
+        g.shadowBlur = 0; g.fillStyle = SHIBA.earIn; g.beginPath(); g.moveTo(-8, 3); g.quadraticCurveTo(-2, -10, 0, -16); g.quadraticCurveTo(2, -10, 8, 3); g.closePath(); g.fill(); g.restore(); });
+      g.lineCap = 'round'; g.lineWidth = 1;
       for (const s of strands) {
         const a = s.ang + s.b, tx = s.x + Math.cos(a) * s.len, ty = s.y + Math.sin(a) * s.len;
         const ma = s.ang + s.b * .4, qx = s.x + Math.cos(ma) * s.len * .55, qy = s.y + Math.sin(ma) * s.len * .55;
-        g.globalAlpha = s.a; g.strokeStyle = s.c; g.lineWidth = s.w;
+        g.globalAlpha = s.a; g.strokeStyle = s.c;
         g.beginPath(); g.moveTo(s.x, s.y); g.quadraticCurveTo(qx, qy, tx, ty); g.stroke();
       }
       g.globalAlpha = 1;
@@ -139,9 +133,9 @@
       for (const s of strands) {
         let target = 0;
         const dx = s.x - mx, dy = s.y - my, d = Math.hypot(dx, dy);
-        if (hot && d < 90) { const p = 1 - d / 90; let da = Math.atan2(dy, dx) - s.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); target = da * p * .95 + Math.sin(t / 70 + s.ph) * .35 * p; }
-        if (ruffle > 0) target += Math.sin(t / 60 + s.ph) * .5 * (ruffle / 40);
-        s.v += (target - s.b) * .16 * dt; s.v *= Math.pow(.8, dt); s.b += s.v * dt;
+        if (hot && d < 80) { const p = 1 - d / 80; let da = Math.atan2(dy, dx) - s.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); target = da * p * .8 + Math.sin(t / 80 + s.ph) * .25 * p; }
+        if (ruffle > 0) target += Math.sin(t / 70 + s.ph) * .35 * (ruffle / 40);
+        s.v += (target - s.b) * .14 * dt; s.v *= Math.pow(.8, dt); s.b += s.v * dt;
         if (Math.abs(s.v) > .003 || Math.abs(s.b) > .01) busy = true;
       }
       draw(t);
@@ -149,7 +143,7 @@
     }
     const kick = () => { if (!raf && !reduce) raf = requestAnimationFrame(tick); };
     const move = e => { const r = el.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; hot = true; kick(); };
-    const leave = () => { hot = false; ruffle = 40; kick(); };           // 떠날 때 한 번 부르르
+    const leave = () => { hot = false; ruffle = 40; kick(); };
     el.addEventListener('pointermove', move); el.addEventListener('pointerleave', leave);
     el.addEventListener('pointerdown', () => { ruffle = 40; kick(); });
     const ro = new ResizeObserver(build); ro.observe(el);
@@ -165,7 +159,7 @@
     const beats = $$('.lp-beat').map(el => ({ el, t: el.querySelector('.lp-beat__t'), c: el.querySelector('.lp-beat__c'), ring: el.querySelector('.lp-ring'), no: el.querySelector('.lp-beat__no'), w: [...el.querySelectorAll('.w i')], p: el.querySelector('p'), en: el.querySelector('.lp-beat__en') }));
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const fine = matchMedia('(pointer: fine)').matches;
-    const furOff = $$('.lp-soc').map(el => fur(el, el.classList.contains('lp-soc--dc') ? FUR.dc : FUR.kk));
+    const furOff = $$('.lp-soc').map(el => fur(el));
 
     const frames = [];
     const still = new Image(); still.src = IMG + 'g-shop.webp';
