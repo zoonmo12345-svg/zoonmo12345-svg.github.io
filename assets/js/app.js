@@ -73,7 +73,7 @@
   function navItems() {
     const a = [{ href: '#/home', key: 'home', name: '홈', tip: '홈', icon: IC.home }, { sep: 1 }];
     Tools.list.forEach(t => a.push({ href: '#/tool/' + t.id, key: 'tool/' + t.id, name: t.name, tip: t.full || t.name, icon: IC[t.icon] || IC.tools, find: t.full }));
-    a.push({ sep: 1 }, { href: '#/raid', key: 'raid', name: '레이드 모집', tip: '레이드 모집', icon: IC.raid }, { href: '#/board', key: 'board', name: '게시판', tip: '게시판 (득템자랑·집꾸미기·정보·자유)', icon: IC.board });
+    a.push({ sep: 1 }, { href: '#/raid', key: 'raid', name: '레이드 모집', tip: '레이드 모집', icon: IC.raid }, { href: '#/board', key: 'board', name: '게시판', tip: '게시판', icon: IC.board });
     if (C.showDownloads) a.push({ href: '#/downloads', key: 'downloads', name: '다운로드', tip: '다운로드', icon: IC.down });
     if (isAdmin()) a.push({ sep: 1 }, { href: '#/admin', key: 'admin', name: '사이트관리', tip: '사이트관리', icon: IC.admin, n: pendingCount });
     return a;
@@ -108,7 +108,7 @@
   let palSel = 0;
   function palItems() {
     const a = navItems().filter(x => !x.sep).map(x => ({ href: x.href, name: x.find || x.name, icon: x.icon }));
-    C.boards.forEach(b => a.push({ href: '#/board/' + b.id, name: '게시판 › ' + b.name, icon: IC.board }));
+    if (C.boards.length > 1) C.boards.forEach(b => a.push({ href: '#/board/' + b.id, name: '게시판 › ' + b.name, icon: IC.board }));
     a.push({ href: '#/me', name: '내 정보', icon: IC.user }, { href: '#/intro', name: '소개 페이지', icon: IC.go });
     return a;
   }
@@ -177,7 +177,7 @@
     S.getNotice().then(t => { const el = $('#notice'); if (!el) return; el.textContent = t || '지금은 공지가 없어'; el.classList.toggle('none', !t); }).catch(() => {});
     S.listPosts({ limit: 40 }).then(ps => {
       setK('kPost', ps.filter(p => dayKey(p.created_at) === dayKey(Date.now())).length);
-      $('#latest').innerHTML = ps.length ? ps.slice(0, 7).map(p => `<a href="#/post/${p.id}"><span class="tag">${esc(boardName(p.cat))}</span><span class="t">${esc(p.title)}${p.comment_count ? ` <em style="font-style:normal;color:var(--gold);font-size:12px">[${p.comment_count}]</em>` : ''}</span><span class="m num">${shortDate(p.created_at)}</span></a>`).join('') : `<div class="mut">아직 글이 없어</div>`;
+      $('#latest').innerHTML = ps.length ? ps.slice(0, 7).map(p => `<a href="#/post/${p.id}">${C.boards.length > 1 ? `<span class="tag">${esc(boardName(p.cat))}</span>` : ''}<span class="t">${esc(p.title)}${p.comment_count ? ` <em style="font-style:normal;color:var(--gold);font-size:12px">[${p.comment_count}]</em>` : ''}</span><span class="m num">${shortDate(p.created_at)}</span></a>`).join('') : `<div class="mut">아직 글이 없어</div>`;
     }).catch(() => {});
     setK('kMsg', unread);
     const hero = $('#hero'), sched = $('#sched');
@@ -279,12 +279,12 @@
   async function board(cat) {
     const write = isOk() ? `<a class="btn btn--gold" href="#/write${cat ? '?cat=' + cat : ''}">글쓰기</a>` : '';
     view.innerHTML = `<div class="page"><div class="ph"><h1>게시판</h1><div class="ph__act">${write}</div></div>
-      <div class="dc__tools"><nav class="seg"><a href="#/board" class="${!cat ? 'on' : ''}">전체</a>${C.boards.map(b => `<a href="#/board/${b.id}" class="${cat === b.id ? 'on' : ''}">${esc(b.name)}</a>`).join('')}</nav>
+      <div class="dc__tools"><nav class="seg" ${C.boards.length > 1 ? '' : 'hidden'}><a href="#/board" class="${!cat ? 'on' : ''}">전체</a>${C.boards.map(b => `<a href="#/board/${b.id}" class="${cat === b.id ? 'on' : ''}">${esc(b.name)}</a>`).join('')}</nav>
         <input class="input" id="bq" placeholder="제목·글쓴이 검색" aria-label="게시판 검색"></div>
       <div id="list"><div class="empty">불러오는 중</div></div></div>`;
     const ps = await S.listPosts({ cat, limit: 300 }).catch(e => { toast(e.message, true); return []; });
     if (!$('#list')) return;
-    $('#list').innerHTML = ps.length ? `<div class="dc"><div class="dc__h"><span>번호</span><span>말머리</span><span>제목</span><span>글쓴이</span><span>날짜</span></div>
+    $('#list').innerHTML = ps.length ? `<div class="dc ${C.boards.length > 1 ? '' : 'dc--one'}"><div class="dc__h"><span>번호</span><span>말머리</span><span>제목</span><span>글쓴이</span><span>날짜</span></div>
       ${ps.map((p, i) => `<a class="dc__r" href="#/post/${p.id}" ${p.images?.[0] ? `data-img="${esc(p.images[0])}"` : ''}><span class="num">${ps.length - i}</span><span class="dc__cat">${esc(boardName(p.cat))}</span>
         <span class="dc__t"><b>${esc(p.title)}</b>${p.images?.length ? IC.pic : ''}${p.comment_count ? `<em>[${p.comment_count}]</em>` : ''}</span>
         <span class="dc__w">${avatar(p.author)}${esc(nick(p.author))}</span><span class="num">${shortDate(p.created_at)}</span></a>`).join('')}</div>`
@@ -319,7 +319,7 @@
     if (block) { view.innerHTML = `<div class="page page--narrow">${block}</div>`; return; }
     view.innerHTML = `<div class="page page--narrow"><div class="ph"><h1>글쓰기</h1></div>
       <form class="form" id="f">
-        <div class="row2"><label class="field"><span>게시판</span><select class="select" name="cat">${C.boards.map(b => `<option value="${b.id}" ${b.id === cat0 ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select></label>
+        <div class="${C.boards.length > 1 ? 'row2' : ''}"><label class="field" ${C.boards.length > 1 ? '' : 'hidden'}><span>게시판</span><select class="select" name="cat">${C.boards.map(b => `<option value="${b.id}" ${b.id === cat0 ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}</select></label>
         <label class="field"><span>제목</span><input class="input" name="title" required maxlength="80" autofocus></label></div>
         <label class="field"><span>내용</span><textarea class="textarea" name="body" maxlength="5000"></textarea></label>
         <div class="field"><span>사진 (6장까지, 붙여넣기도 됨)</span><div><label class="btn btn--sm">사진 고르기<input type="file" id="files" accept="image/*" multiple hidden></label></div><div class="thumbs" id="th"></div></div>
@@ -559,7 +559,7 @@
     const raw = location.hash.slice(1) || '/';
     const [path, qs] = raw.split('?'), q = new URLSearchParams(qs || ''), parts = path.split('/').filter(Boolean);
     let key = parts[0] || '';
-    if (!key) { if (me() || entered()) return go('#/home'); key = 'intro'; }       // 상회원·다시 온 사람은 소개 화면을 건너뜀
+    if (!key) key = 'intro';       // 주소만 치고 들어오면 항상 소개 화면부터
     document.body.classList.toggle('landing', key === 'intro');
     window.scrollTo(0, 0);
     if (key === 'intro') { renderPeers(); document.title = '슈고상회 · 아이온2 레기온'; Landing.render(view, { esc, me, enter }); return; }

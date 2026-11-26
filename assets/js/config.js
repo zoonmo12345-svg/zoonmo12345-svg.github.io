@@ -28,9 +28,6 @@ window.SHUGO_CONFIG = {
 
   // 게시판 분류
   boards: [
-    { id: 'free',  name: '자유게시판' },
-    { id: 'loot',  name: '득템자랑' },
-    { id: 'house', name: '집꾸미기' },
-    { id: 'info',  name: '정보공유' }
+    { id: 'free',  name: '자유게시판' }
   ]
 };
