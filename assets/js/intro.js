@@ -79,7 +79,7 @@
 
 
   // ── 시바견 털 버튼 ──
-  // 몸통과 아이콘은 털 재질 그림(힉스필드 생성), 코드로는 테두리 솜털과 귀만 그림. 마우스가 지나가면 테두리 털이 살랑 밀림.
+  // 몸통과 아이콘은 털 재질 그림(힉스필드 생성), 코드로는 테두리 솜털만 그림. 마우스가 지나가면 테두리 털이 살랑 밀림.
   const SHIBA = { top: [214, 150, 84], bottom: [240, 214, 176], earIn: '#f7e4c8' };
   function fur(el) {
     const PAD = 30, cv = document.createElement('canvas'), g = cv.getContext('2d');
@@ -98,7 +98,6 @@
       g.setTransform(dpr, 0, 0, dpr, PAD * dpr, PAD * dpr);
       strands = []; const R = Math.min(26, H / 2);
       const add = (x, y, ang, len, a) => strands.push({ x, y, ang, len, a, c: mix(tone(y), rnd(-16, 18)), b: 0, v: 0, ph: Math.random() * 6.28 });
-      ears = [{ x: R + 18, d: -1 }, { x: W - R - 18, d: 1 }];
       // 테두리 솜털: 짧고 가늘게 여러 겹 (안쪽에서 시작해서 살짝만 밖으로)
       const J = () => rnd(-.3, .3), L = () => rnd(3, 6.5), IN = () => rnd(0, 2.5);
       for (let layer = 0; layer < 3; layer++) {
@@ -113,11 +112,6 @@
     }
     function draw(t) {
       g.clearRect(-PAD, -PAD, W + PAD * 2, H + PAD * 2);
-      const wig = hot || ruffle > 0 ? Math.sin(t / 110) * 6 : 0;
-      ears.forEach(e => { g.save(); g.translate(e.x, 5); g.rotate(e.d * (8 + wig) * Math.PI / 180);
-        g.shadowColor = mix(0, -6); g.shadowBlur = 4;
-        g.fillStyle = mix(0, -6); g.beginPath(); g.moveTo(-17, 3); g.quadraticCurveTo(-5, -20, 0, -27); g.quadraticCurveTo(5, -20, 17, 3); g.closePath(); g.fill();
-        g.shadowBlur = 0; g.fillStyle = SHIBA.earIn; g.beginPath(); g.moveTo(-8, 3); g.quadraticCurveTo(-2, -10, 0, -16); g.quadraticCurveTo(2, -10, 8, 3); g.closePath(); g.fill(); g.restore(); });
       g.lineCap = 'round'; g.lineWidth = 1;
       for (const s of strands) {
         const a = s.ang + s.b, tx = s.x + Math.cos(a) * s.len, ty = s.y + Math.sin(a) * s.len;

@@ -124,7 +124,7 @@
           .gte('starts_at', new Date(Date.now() - 6 * 3600e3).toISOString()).order('starts_at');
         err(error); return data;
       },
-      async createRaid(r) { const { error } = await sb.from('raids').insert(r); err(error); },
+      async createRaid(r) { const { data, error } = await sb.from('raids').insert(r).select('id').single(); err(error); return data.id; },
       async deleteRaid(id) { const { error } = await sb.from('raids').delete().eq('id', id); err(error); },
       async joinRaid(id, role) { const { error } = await sb.from('raid_members').upsert({ raid_id: id, user_id: me.id, role }); err(error); },
       async leaveRaid(id) { const { error } = await sb.from('raid_members').delete().eq('raid_id', id).eq('user_id', me.id); err(error); },
@@ -226,7 +226,7 @@
         return db.raids.filter(r => new Date(r.starts_at).getTime() >= since).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))
           .map(r => ({ ...r, author: who(r.author_id), members: db.raid_members.filter(x => x.raid_id === r.id).map(x => ({ user_id: x.user_id, role: x.role, profile: who(x.user_id) })) }));
       },
-      async createRaid(r) { const m = approved(); db.raids.push({ ...r, id: nid(), author_id: m.id, created_at: new Date().toISOString() }); save(); },
+      async createRaid(r) { const m = approved(), id = nid(); db.raids.push({ ...r, id, author_id: m.id, created_at: new Date().toISOString() }); save(); return id; },
       async deleteRaid(id) { const m = approved(), r = db.raids.find(x => x.id === id); need(r.author_id === m.id || m.role !== 'member', '모집한 사람만 지울 수 있어');
         db.raids = db.raids.filter(x => x.id !== id); db.raid_members = db.raid_members.filter(x => x.raid_id !== id); save(); },
       async joinRaid(id, role) { const m = approved(), ex = db.raid_members.find(x => x.raid_id === id && x.user_id === m.id); if (ex) ex.role = role; else db.raid_members.push({ raid_id: id, user_id: m.id, role }); save(); },

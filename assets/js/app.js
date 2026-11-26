@@ -63,6 +63,7 @@
     user: I('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>'),
     down: I('<path d="M12 3v12m-5-5 5 5 5-5M4 20h16"/>'),
     go: I('<path d="M5 12h14m-6-6 6 6-6 6"/>'),
+    game: I('<rect x="2.5" y="7" width="19" height="11" rx="5.5"/><path d="M7 12.5h4M9 10.5v4M15.5 11.5v.01M18 13.5v.01"/>'),
     pic: I('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5-5 4 4 3-3 4 4"/>'),
     bell: I('<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>'),
     mail: I('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>')
@@ -74,6 +75,7 @@
     const a = [{ href: '#/home', key: 'home', name: '홈', tip: '홈', icon: IC.home }, { sep: 1 }];
     Tools.list.forEach(t => a.push({ href: '#/tool/' + t.id, key: 'tool/' + t.id, name: t.name, tip: t.full || t.name, icon: IC[t.icon] || IC.tools, find: t.full }));
     a.push({ sep: 1 }, { href: '#/raid', key: 'raid', name: '레이드 모집', tip: '레이드 모집', icon: IC.raid }, { href: '#/board', key: 'board', name: '게시판', tip: '게시판', icon: IC.board });
+    a.push({ href: '#/games', key: 'games', name: '미니게임', tip: '미니게임', icon: IC.game });
     if (C.showDownloads) a.push({ href: '#/downloads', key: 'downloads', name: '다운로드', tip: '다운로드', icon: IC.down });
     if (isAdmin()) a.push({ sep: 1 }, { href: '#/admin', key: 'admin', name: '사이트관리', tip: '사이트관리', icon: IC.admin, n: pendingCount });
     return a;
@@ -82,8 +84,8 @@
     document.getElementById('railNav').innerHTML = navItems().map(it => it.sep ? '<div class="rail__sep"></div>'
       : `<a class="rail__btn ${cur === it.key ? 'on' : ''}" href="${it.href}" data-tip="${esc(it.tip)}" aria-label="${esc(it.tip)}">${it.icon}<span class="tx">${esc(it.name)}</span>${it.n ? `<span class="n">${it.n}</span>` : ''}</a>`).join('');
     const top = cur.split('/')[0];
-    const dock = [['#/home', 'home', '홈', IC.home], ['#/tools', 'tool', '도구', IC.tools], ['#/raid', 'raid', '레이드', IC.raid], ['#/board', 'board', '게시판', IC.board], ['#/me', 'me', '내 정보', IC.user]];
-    document.getElementById('dock').innerHTML = dock.map(([h, k, n, ic]) => `<a href="${h}" class="${top === k || (k === 'tool' && top === 'tools') ? 'on' : ''}">${ic}<span>${n}</span></a>`).join('');
+    const dock = [['#/home', 'home', '홈', IC.home], ['#/tools', 'tool', '도구', IC.tools], ['#/games', 'games', '게임', IC.game], ['#/raid', 'raid', '레이드', IC.raid], ['#/board', 'board', '게시판', IC.board], ['#/me', 'me', '내 정보', IC.user]];
+    document.getElementById('dock').innerHTML = dock.map(([h, k, n, ic]) => `<a href="${h}" class="${top === k || (k === 'tool' && top === 'tools') || (k === 'games' && top === 'game') ? 'on' : ''}">${ic}<span>${n}</span></a>`).join('');
   }
   // 접힌 메뉴에서 마우스 올리면 이름 보여주기
   const rail = document.getElementById('rail'), tip = document.getElementById('tip');
@@ -164,6 +166,9 @@
         <a class="kpi" href="#/board"><b class="num" id="kPost">-</b><span>오늘 새 글</span></a>
         <a class="kpi kpi--red" href="${ok ? '#/msg' : '#/login'}"><b class="num" id="kMsg">-</b><span>안 읽은 쪽지</span></a>
       </div>
+      <a class="gbanner c12" href="#/games" data-spot>
+        <div><span class="eyebrow">미니게임 · 가입 없이 바로</span><h2>와르르 슈고</h2><p>밟으면 떨어지는 발판 위에서 끝까지 살아남기. 최대 5명이 같이 해.</p></div>
+        <span class="btn btn--gold btn--lg">게임 하러 가기 ${IC.go}</span></a>
       <section class="pn c8" id="hero" data-spot><div class="hr"><div><span class="eyebrow">다음 레이드</span><h2 class="mut">불러오는 중</h2></div></div></section>
       <section class="pn c4"><h3 class="pn__h">상회 공지</h3><div class="notice none" id="notice">불러오는 중</div></section>
       <section class="pn c5"><h3 class="pn__h">레이드 일정<a href="#/raid">전체 보기</a></h3><div class="pn__b list" id="sched"></div></section>
@@ -208,6 +213,14 @@
       Fx.refresh(view);
     }).catch(() => { hero.innerHTML = ''; });
   }
+
+  // ───── 미니게임 ─────
+  function gamesPage() {
+    view.innerHTML = `<div class="page page--mid"><div class="ph"><div><h1>미니게임</h1><p>가입 안 해도 바로 할 수 있어. 상회원은 닉네임이 반짝여.</p></div></div>
+      <div class="glist">${Games.list.map(g => `<a class="gcard" href="#/game/${g.id}" data-tilt><div class="gcard__pic" style="background-image:url('${g.thumb}')"></div><div class="gcard__b"><h2>${esc(g.name)}</h2><p>${esc(g.desc)}</p><div class="meta"><span class="tag tag--gold">최대 ${g.max}명</span>${g.live ? '<span class="tag tag--teal">실시간</span>' : ''}</div></div></a>`).join('')}
+      <div class="gcard gcard--soon"><div class="gcard__b"><h2>다음 게임</h2><p>준비 중이야.</p></div></div></div></div>`;
+  }
+  function gamePage(id) { const g = Games.get(id); if (!g) return go('#/games'); g.render(view, { esc, toast, me, isOk }); }
 
   // ───── 도구 ─────
   function toolsPage() {
@@ -373,12 +386,13 @@
         <label class="field"><span>제목</span><input class="input" name="title" required maxlength="60" placeholder="예) 무스펠 2넴 트라이" autofocus></label>
         <div><label class="field"><span>던전</span><select class="select" name="dungeon"><option value="">안 고름</option>${Tools.list.filter(t => t.dungeon).map(t => `<option>${esc(t.dungeon)}</option>`).join('')}</select></label></div>
         <div class="field"><span>출발</span><div class="when" id="when"></div></div>
-        <label class="field"><span>메모</span><input class="input" name="note" maxlength="200" placeholder="조건, 모이는 곳"></label>
+        <div class="row2"><label class="field"><span>내 역할 (나는 자동으로 참여돼)</span><select class="select" name="role">${ROLES.map(x => `<option ${x === '딜러' ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+        <label class="field"><span>메모</span><input class="input" name="note" maxlength="200" placeholder="조건, 모이는 곳"></label></div>
         <div class="acts"><button type="button" class="btn btn--plain" data-close>취소</button><button class="btn btn--gold">올리기</button></div></form>`);
       const picker = whenPicker($('#when', d), t);
       $('#nf', d).onsubmit = e => { e.preventDefault(); const f = new FormData(e.target);
         if (picker.get() <= Date.now()) { toast('이미 지난 시간이야. 출발 시간을 다시 골라줘', true); return; }
-        run(e.submitter, async () => { await S.createRaid({ title: f.get('title').trim(), dungeon: f.get('dungeon'), starts_at: picker.get().toISOString(), slots: RAID_SIZE, note: f.get('note').trim() }); d.close(); load(); refreshStatus(); }); };
+        run(e.submitter, async () => { await S.createRaid({ title: f.get('title').trim(), dungeon: f.get('dungeon'), starts_at: picker.get().toISOString(), slots: RAID_SIZE, note: f.get('note').trim() }).then(id => S.joinRaid(id, f.get('role'))); d.close(); load(); refreshStatus(); }); };
     };
     async function load() {
       const rs = await S.listRaids().catch(e => { toast(e.message, true); return []; });
@@ -552,7 +566,7 @@
   const enteredKey = 'shugo_entered';
   const entered = () => { try { return localStorage.getItem(enteredKey) === '1'; } catch (e) { return false; } };
   function enter() { try { localStorage.setItem(enteredKey, '1'); } catch (e) {} go('#/home'); }
-  const TITLES = { home: '홈', tools: '도구', login: '로그인', signup: '가입', me: '내 정보', board: '게시판', post: '게시판', write: '글쓰기', raid: '레이드 모집', msg: '쪽지함', downloads: '다운로드', admin: '사이트관리' };
+  const TITLES = { home: '홈', tools: '도구', login: '로그인', signup: '가입', me: '내 정보', board: '게시판', post: '게시판', write: '글쓰기', raid: '레이드 모집', games: '미니게임', game: '미니게임', msg: '쪽지함', downloads: '다운로드', admin: '사이트관리' };
 
   async function route() {
     Landing.stop(); peek.hidden = true;
@@ -565,13 +579,15 @@
     if (key === 'intro') { renderPeers(); document.title = '슈고상회 · 아이온2 레기온'; Landing.render(view, { esc, me, enter }); return; }
     refreshUnread(); refreshStatus();
     const tool = key === 'tool' && Tools.get(parts[1]);
-    renderNav(key === 'tool' ? 'tool/' + parts[1] : key === 'post' || key === 'write' ? 'board' : key);
+    renderNav(key === 'tool' ? 'tool/' + parts[1] : key === 'post' || key === 'write' ? 'board' : key === 'game' ? 'games' : key);
     const title = tool ? (tool.full || tool.name) : TITLES[key] || '';
     renderBar(title);
     document.title = (title && key !== 'home' ? title + ' · ' : '') + '슈고상회';
     try {
       if (key === 'home') await home();
       else if (key === 'tools') toolsPage();
+      else if (key === 'games') gamesPage();
+      else if (key === 'game') gamePage(parts[1]);
       else if (key === 'tool') toolPage(parts[1]);
       else if (key === 'login') login();
       else if (key === 'signup') signup();

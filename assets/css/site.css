@@ -340,6 +340,61 @@ a.kpi:hover { border-color: var(--line2); transform: translateY(-2px); }
 .tips summary { padding: 10px 2px; font: 800 13.5px var(--disp); }
 .tips ul { margin: 0 0 12px; padding-left: 18px; color: var(--ink2); font-size: 13.5px; line-height: 1.7; }
 
+/* ───── 미니게임 ───── */
+.gbanner { grid-column: span 12; position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; border: 1px solid var(--line2); border-radius: 12px; overflow: hidden; background: #1a120c url('../img/g-game-bg.webp') center 62% / cover; image-rendering: pixelated; transition: transform .2s var(--ease), border-color .2s; }
+.gbanner::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11, 9, 8, .92) 0%, rgba(11, 9, 8, .7) 45%, rgba(11, 9, 8, .25) 100%); }
+.gbanner > * { position: relative; }
+.gbanner:hover { transform: translateY(-2px); border-color: var(--gold); }
+.gbanner h2 { margin-top: 6px; font: 900 clamp(22px, 2.4vw, 32px) var(--disp); }
+.gbanner p { margin-top: 2px; color: var(--ink2); font-size: 13.5px; }
+.glist { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.gcard { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--s1); transition: border-color .15s; will-change: transform; }
+.gcard:hover { border-color: var(--gold); }
+.gcard__pic { aspect-ratio: 16/9; background: #1a120c center / cover; image-rendering: pixelated; }
+.gcard__b { padding: 14px 16px 16px; }
+.gcard__b h2 { font: 800 18px var(--disp); }
+.gcard__b p { color: var(--ink2); font-size: 13.5px; margin: 4px 0 10px; }
+.gcard--soon { justify-content: center; border-style: dashed; color: var(--mut); min-height: 160px; }
+.g-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; align-items: start; }
+.g-stage { position: relative; border: 1px solid var(--line2); border-radius: 12px; overflow: hidden; background: #000; touch-action: none; }
+.g-stage canvas { display: block; width: 100%; height: auto; aspect-ratio: 16/9; image-rendering: pixelated; }
+.g-tags { position: absolute; inset: 0; pointer-events: none; }
+.g-tags span { position: absolute; transform: translate(-50%, -100%); padding: 1px 6px; border-radius: 4px; background: rgba(11, 9, 8, .6); color: #fff; font-size: clamp(9px, 1.1vw, 13px); font-weight: 700; white-space: nowrap; }
+.vip { background: linear-gradient(100deg, #f6cf7d 0%, #fff7dc 30%, #e8b04a 50%, #fff7dc 70%, #f6cf7d 100%) 0 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; font-weight: 800; animation: vip 1.8s linear infinite; }
+.g-tags span.vip { background: linear-gradient(100deg, #f6cf7d 0%, #fff7dc 30%, #e8b04a 50%, #fff7dc 70%, #f6cf7d 100%) 0 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; text-shadow: none; filter: drop-shadow(0 1px 0 #000) drop-shadow(0 0 3px rgba(0, 0, 0, .9)); }
+.g-tags span.vip::after { content: " ✦"; -webkit-text-fill-color: #fff2b8; }
+@keyframes vip { to { background-position: -200% 0; } }
+.g-over { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11, 9, 8, .55); }
+.g-count { font: 900 clamp(60px, 14vw, 150px) var(--disp); color: var(--gold2); text-shadow: 0 6px 0 #3b2414; }
+.g-res { text-align: center; padding: 18px 22px; border-radius: 14px; background: var(--s1); border: 1px solid var(--line2); min-width: min(300px, 80%); }
+.g-res h2 { font: 900 24px var(--disp); color: var(--gold2); }
+.g-res ol { list-style: none; margin: 12px 0 14px; padding: 0; display: grid; gap: 4px; counter-reset: r; text-align: left; }
+.g-res li { counter-increment: r; display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 8px; font-weight: 700; }
+.g-res li::before { content: counter(r) "등"; width: 30px; color: var(--mut); font-size: 12px; }
+.g-res li.me { background: var(--s3); }
+.g-res img, .g-p img { width: 24px; height: 28px; image-rendering: pixelated; }
+.g-res__b { display: flex; gap: 6px; justify-content: center; }
+.g-pad { display: none; grid-template-columns: 1fr 1fr 1.4fr; gap: 8px; margin-top: 10px; }
+.g-pad button { height: 68px; border: 1px solid var(--line2); border-radius: 14px; background: var(--s2); color: var(--ink); font: 800 22px var(--disp); touch-action: none; user-select: none; -webkit-user-select: none; }
+.g-pad button:active { background: var(--s3); transform: scale(.97); }
+.g-pad .g-jump { background: var(--gold); border-color: var(--gold); color: var(--gold-ink); font-size: 18px; }
+.g-help { margin-top: 8px; font-size: 12.5px; }
+.g-menu { display: grid; gap: 8px; padding-top: 12px; }
+.g-name { display: flex; align-items: baseline; justify-content: space-between; padding: 8px 10px; border-radius: 8px; background: var(--bg); }
+.g-name b { font-size: 16px; }
+.label { font-size: 12px; font-weight: 700; color: var(--mut); }
+.g-rooms { display: grid; gap: 6px; margin-top: 6px; }
+.g-room { display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 8px; background: var(--bg); font-size: 13.5px; }
+.g-room:hover:not([disabled]) { border-color: var(--gold); }
+.g-room[disabled] { opacity: .5; }
+.g-players { display: grid; gap: 4px; }
+.g-p { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border-radius: 8px; background: var(--bg); font-weight: 700; }
+.g-p em { margin-left: auto; font-style: normal; font-size: 12px; color: var(--teal); }
+.g-p--empty { color: var(--mut); font-weight: 500; border: 1px dashed var(--line2); background: none; }
+@media (max-width: 1000px) { .g-wrap { grid-template-columns: 1fr; } }
+@media (pointer: coarse) { .g-pad { display: grid; } .g-help { display: none; } }
+@media (max-width: 760px) { .gbanner { flex-direction: column; align-items: flex-start; } .gbanner .btn { width: 100%; } }
+
 /* ───── 접속 중 · 쪽지 ───── */
 .peers { position: fixed; inset: 0 0 var(--stat) auto; z-index: 35; width: 176px; display: none; flex-direction: column; padding: 12px 8px 8px; background: var(--bg2); border-left: 1px solid var(--line); }
 .peers h2 { display: flex; align-items: center; gap: 6px; padding: 0 8px 10px; font: 800 12.5px var(--disp); color: var(--ink2); }
