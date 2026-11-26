@@ -79,6 +79,83 @@
     start(view);
   }
 
+
+  // ── 털북숭이 버튼: 털을 한 올씩 그리고, 마우스가 지나가면 털이 밀려나며 흩날림 ──
+  const FUR = {
+    dc: { base: '#5865f2', fur: ['#6f7bf7', '#4955dc', '#8c96fa', '#3d49c9'], ear: '#aab1ff' },
+    kk: { base: '#fee500', fur: ['#fff06a', '#e8cd00', '#fff7a8', '#d4ba00'], ear: '#fff9c2' }
+  };
+  function fur(el, C) {
+    const PAD = 30, cv = document.createElement('canvas'), g = cv.getContext('2d');
+    cv.className = 'lp-fur'; el.prepend(cv);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let W = 0, H = 0, strands = [], ears = [], mx = -999, my = -999, hot = false, raf = 0, t0 = 0, ruffle = 0;
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+
+    function build() {
+      const r = el.getBoundingClientRect(); W = r.width; H = r.height;
+      const dpr = Math.min(2, devicePixelRatio || 1);
+      cv.width = (W + PAD * 2) * dpr; cv.height = (H + PAD * 2) * dpr;
+      cv.style.width = (W + PAD * 2) + 'px'; cv.style.height = (H + PAD * 2) + 'px';
+      g.setTransform(dpr, 0, 0, dpr, PAD * dpr, PAD * dpr);
+      strands = []; const R = Math.min(22, H / 2);
+      const add = (x, y, ang, len, a, w) => strands.push({ x, y, ang, len, a, w, c: pick(C.fur), b: 0, v: 0, ph: Math.random() * 6.28 });
+      // 귀 (위쪽 양 끝)
+      ears = [{ x: R + 10, y: 2, r: 15 }, { x: W - R - 10, y: 2, r: 15 }];
+      ears.forEach(e => { for (let a = Math.PI * 1.02; a < Math.PI * 1.98; a += .09) add(e.x + Math.cos(a) * e.r, e.y + Math.sin(a) * e.r, a + rnd(-.3, .3), rnd(6, 11), 1, 1.5); });
+      // 가장자리 털 (바깥으로 삐죽삐죽)
+      const step = 2.1;
+      for (let x = R; x <= W - R; x += step) { add(x, 0, -Math.PI / 2 + rnd(-.45, .45), rnd(7, 14), 1, 1.5); add(x, H, Math.PI / 2 + rnd(-.45, .45), rnd(7, 14), 1, 1.5); }
+      for (let y = R; y <= H - R; y += step) { add(0, y, Math.PI + rnd(-.45, .45), rnd(7, 14), 1, 1.5); add(W, y, rnd(-.45, .45), rnd(7, 14), 1, 1.5); }
+      [[R, R, Math.PI, 1.5 * Math.PI], [W - R, R, 1.5 * Math.PI, 2 * Math.PI], [W - R, H - R, 0, .5 * Math.PI], [R, H - R, .5 * Math.PI, Math.PI]].forEach(([cx, cy, a0, a1]) => {
+        for (let a = a0; a < a1; a += step / R) add(cx + Math.cos(a) * R, cy + Math.sin(a) * R, a + rnd(-.45, .45), rnd(7, 14), 1, 1.5);
+      });
+      // 몸통 털 (아래로 누운 결)
+      const n = Math.round(W * H / 55);
+      for (let i = 0; i < n; i++) add(rnd(4, W - 4), rnd(2, H - 6), Math.PI / 2 + rnd(-.7, .7), rnd(6, 11), rnd(.28, .6), 1.2);
+      draw(0);
+    }
+    function draw(t) {
+      g.clearRect(-PAD, -PAD, W + PAD * 2, H + PAD * 2);
+      const wig = hot || ruffle > 0 ? Math.sin(t / 90) * 5 : 0;
+      ears.forEach((e, i) => { g.save(); g.translate(e.x, e.y + 8); g.rotate((i ? 1 : -1) * wig * Math.PI / 180); g.translate(-e.x, -e.y - 8);
+        g.fillStyle = C.base; g.beginPath(); g.arc(e.x, e.y, e.r, 0, 6.29); g.fill();
+        g.fillStyle = C.ear; g.beginPath(); g.arc(e.x, e.y + 1, e.r * .52, 0, 6.29); g.fill(); g.restore(); });
+      const R = Math.min(22, H / 2);
+      g.fillStyle = C.base; g.beginPath(); g.roundRect(0, 0, W, H, R); g.fill();
+      g.lineCap = 'round';
+      for (const s of strands) {
+        const a = s.ang + s.b, tx = s.x + Math.cos(a) * s.len, ty = s.y + Math.sin(a) * s.len;
+        const ma = s.ang + s.b * .4, qx = s.x + Math.cos(ma) * s.len * .55, qy = s.y + Math.sin(ma) * s.len * .55;
+        g.globalAlpha = s.a; g.strokeStyle = s.c; g.lineWidth = s.w;
+        g.beginPath(); g.moveTo(s.x, s.y); g.quadraticCurveTo(qx, qy, tx, ty); g.stroke();
+      }
+      g.globalAlpha = 1;
+    }
+    function tick(t) {
+      raf = 0; const dt = Math.min(40, t - t0 || 16) / 16; t0 = t;
+      let busy = false; if (ruffle > 0) ruffle -= dt;
+      for (const s of strands) {
+        let target = 0;
+        const dx = s.x - mx, dy = s.y - my, d = Math.hypot(dx, dy);
+        if (hot && d < 90) { const p = 1 - d / 90; let da = Math.atan2(dy, dx) - s.ang; da = Math.atan2(Math.sin(da), Math.cos(da)); target = da * p * .95 + Math.sin(t / 70 + s.ph) * .35 * p; }
+        if (ruffle > 0) target += Math.sin(t / 60 + s.ph) * .5 * (ruffle / 40);
+        s.v += (target - s.b) * .16 * dt; s.v *= Math.pow(.8, dt); s.b += s.v * dt;
+        if (Math.abs(s.v) > .003 || Math.abs(s.b) > .01) busy = true;
+      }
+      draw(t);
+      if (hot || busy || ruffle > 0) raf = requestAnimationFrame(tick);
+    }
+    const kick = () => { if (!raf && !reduce) raf = requestAnimationFrame(tick); };
+    const move = e => { const r = el.getBoundingClientRect(); mx = e.clientX - r.left; my = e.clientY - r.top; hot = true; kick(); };
+    const leave = () => { hot = false; ruffle = 40; kick(); };           // 떠날 때 한 번 부르르
+    el.addEventListener('pointermove', move); el.addEventListener('pointerleave', leave);
+    el.addEventListener('pointerdown', () => { ruffle = 40; kick(); });
+    const ro = new ResizeObserver(build); ro.observe(el);
+    return () => { ro.disconnect(); cancelAnimationFrame(raf); };
+  }
+
   function start(view) {
     const $ = s => view.querySelector(s), $$ = s => [...view.querySelectorAll(s)];
     const hero = $('#lpHero'), glow = $('#lpGlow'), letters = $$('#lpTitle span');
@@ -88,6 +165,7 @@
     const beats = $$('.lp-beat').map(el => ({ el, t: el.querySelector('.lp-beat__t'), c: el.querySelector('.lp-beat__c'), ring: el.querySelector('.lp-ring'), no: el.querySelector('.lp-beat__no'), w: [...el.querySelectorAll('.w i')], p: el.querySelector('p'), en: el.querySelector('.lp-beat__en') }));
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const fine = matchMedia('(pointer: fine)').matches;
+    const furOff = $$('.lp-soc').map(el => fur(el, el.classList.contains('lp-soc--dc') ? FUR.dc : FUR.kk));
 
     const frames = [];
     const still = new Image(); still.src = IMG + 'g-shop.webp';
@@ -194,7 +272,7 @@
     size();
     addEventListener('resize', onResize);
     raf = requestAnimationFrame(tick);
-    stop = () => { alive = false; cancelAnimationFrame(raf); removeEventListener('resize', onResize); removeEventListener('pointermove', onMove); stop = null; };
+    stop = () => { alive = false; furOff.forEach(f => f()); cancelAnimationFrame(raf); removeEventListener('resize', onResize); removeEventListener('pointermove', onMove); stop = null; };
   }
 
   window.Landing = { render, stop() { if (stop) stop(); } };
