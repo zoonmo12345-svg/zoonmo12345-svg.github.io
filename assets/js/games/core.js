@@ -63,5 +63,53 @@
     },
     newCode: () => Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('')
   };
+
+  // ── 소리: 모든 게임이 같이 쓰는 전체 소리 크기 (이 기기에 기억) ──
+  const ls = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  const A = { ctx: null, master: null, v: .6, el: null, direct: false, want: false };
+  { const s = parseFloat(ls.get('shugo_vol')); if (s >= 0 && s <= 1) A.v = s; }
+  function ac() {
+    if (!A.ctx) { const X = window.AudioContext || window.webkitAudioContext; if (!X) return null; A.ctx = new X(); A.master = A.ctx.createGain(); A.master.gain.value = A.v; A.master.connect(A.ctx.destination); }
+    if (A.ctx.state === 'suspended') A.ctx.resume();
+    return A.ctx;
+  }
+  Games.sound = {
+    vol: () => A.v,
+    setVol(v) { A.v = Math.min(1, Math.max(0, +v || 0)); ls.set('shugo_vol', A.v); if (A.master) A.master.gain.value = A.v; if (A.el && A.direct) A.el.volume = A.v * .5; },
+    unlock() { ac(); },
+    // 짧은 삑 소리: f → f2 로 미끄러짐
+    tone({ f, f2, t = .1, type = 'sine', g = .2, at = 0 }) {
+      const c = ac(); if (!c || A.v <= 0) return;
+      const t0 = c.currentTime + at, o = c.createOscillator(), gn = c.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + t);
+      gn.gain.setValueAtTime(0, t0); gn.gain.linearRampToValueAtTime(g, t0 + .008); gn.gain.exponentialRampToValueAtTime(.0001, t0 + t);
+      o.connect(gn); gn.connect(A.master); o.start(t0); o.stop(t0 + t + .02);
+    },
+    // 치익 소리
+    noise({ t = .3, g = .1, f = 1500, at = 0 }) {
+      const c = ac(); if (!c || A.v <= 0) return;
+      const t0 = c.currentTime + at, len = Math.ceil(c.sampleRate * t), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const src = c.createBufferSource(), lp = c.createBiquadFilter(), gn = c.createGain(); src.buffer = buf;
+      lp.type = 'lowpass'; lp.frequency.setValueAtTime(f, t0); lp.frequency.exponentialRampToValueAtTime(200, t0 + t);
+      gn.gain.setValueAtTime(g, t0); gn.gain.exponentialRampToValueAtTime(.0001, t0 + t);
+      src.connect(lp); lp.connect(gn); gn.connect(A.master); src.start(t0);
+    },
+    bgm: {
+      // 첫 터치 때 미리 깨워 둠 (아이폰은 누른 순간에만 소리를 틀 수 있어서)
+      prime(url) {
+        if (A.el) return;
+        const el = new Audio(url); el.loop = true; el.preload = 'auto'; A.el = el;
+        const c = ac();
+        try { const src = c.createMediaElementSource(el), gn = c.createGain(); gn.gain.value = .5; src.connect(gn); gn.connect(A.master); }
+        catch (e) { A.direct = true; el.volume = A.v * .5; }
+        el.muted = true; const p = el.play();
+        const done = () => { if (!A.want) { el.pause(); el.currentTime = 0; } el.muted = false; };
+        if (p && p.then) p.then(done).catch(() => { el.muted = false; }); else done();
+      },
+      play(url) { A.want = true; this.prime(url); A.el.muted = false; const p = A.el.play(); if (p && p.catch) p.catch(() => {}); },
+      pause() { A.want = false; if (A.el) A.el.pause(); }
+    }
+  };
   window.Games = Games;
 })();

@@ -576,7 +576,7 @@
     if (!key) key = 'intro';       // 주소만 치고 들어오면 항상 소개 화면부터
     document.body.classList.toggle('landing', key === 'intro');
     window.scrollTo(0, 0);
-    if (key === 'intro') { renderPeers(); document.title = '슈고상회 · 아이온2 레기온'; Landing.render(view, { esc, me, enter }); return; }
+    if (key === 'intro') { renderPeers(); document.title = '슈고상회 · 아이온2 레기온'; Landing.render(view, { esc, me, enter, toast }); return; }
     refreshUnread(); refreshStatus();
     const tool = key === 'tool' && Tools.get(parts[1]);
     renderNav(key === 'tool' ? 'tool/' + parts[1] : key === 'post' || key === 'write' ? 'board' : key === 'game' ? 'games' : key);
