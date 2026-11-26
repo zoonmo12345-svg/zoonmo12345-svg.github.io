@@ -1,0 +1,15 @@
+{
+  "name": "슈고상회",
+  "short_name": "슈고상회",
+  "description": "아이온2 레기온 슈고상회. 레이드 모집과 알림, 공대 자리 배정.",
+  "start_url": "./#/home",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0908",
+  "theme_color": "#0b0908",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

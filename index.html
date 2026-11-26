@@ -2,503 +2,83 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>슈고상회</title>
-  
-  <meta name="description" content="아이온2 파프니르서버 레기온, 슈고상회라거!!">
-  
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src https://cdn.jsdelivr.net https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.youtube.com; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>슈고상회 · 아이온2 레기온</title>
+  <meta name="description" content="아이온2 레기온 슈고상회. 공대 자리 배정, 레이드 모집, 득템·집꾸미기 게시판.">
+  <meta name="theme-color" content="#0b0908">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="슈고상회 · 아이온2 레기온">
+  <meta property="og:description" content="같이 뛸 데바 구한다거.">
+  <meta property="og:image" content="https://www.xn--299a009a7ibxz4b.com/assets/img/g-shop.webp">
   <link rel="icon" type="image/x-icon" href="/shugoicon.ico">
-  <link rel="shortcut icon" href="/shugoicon.ico" type="image/x-icon">
-
-  <style>
-    /* 전체 레이아웃 */
-    body {
-      margin: 0; padding: 0;
-      background: #000; color: #fff;
-      font-family: sans-serif;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* --- 좌측 슬라이딩 패널 래퍼 (기존) --- */
-    .panel-wrapper {
-      position: fixed;
-      top: 0;
-      left: -340px; 
-      height: 100vh;
-      z-index: 100;
-      transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    .panel-wrapper.open {
-      left: 0; 
-    }
-
-    /* 좌측 알리미 패널 CSS */
-    .left-panel {
-      width: 340px; height: 100%; background: #16161a; border-right: 1px solid #2c2c35;
-      padding: 30px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;
-      box-shadow: 5px 0 15px rgba(0,0,0,0.5); overflow-y: auto;
-    }
-    
-    /* 꼬리표 (가죽 택 모양 탭) */
-    .toggle-tab {
-      position: absolute; top: 50%; right: -42px; width: 42px; height: 150px;
-      background: #252530; border: 1px solid #3a3a45; border-left: none;
-      border-radius: 0 16px 16px 0; transform: translateY(-50%); cursor: pointer;
-      display: flex; justify-content: center; align-items: center; box-shadow: 5px 0 10px rgba(0,0,0,0.4);
-      color: #ddd; font-weight: 800; font-size: 0.95rem; writing-mode: vertical-rl;
-      text-orientation: upright; letter-spacing: 2px; transition: background 0.2s, color 0.2s; user-select: none;
-    }
-    .toggle-tab:hover { background: #ff4757; color: #fff; }
-    .toggle-tab::before {
-      content: ""; position: absolute; top: 50%; left: 6px; width: 6px; height: 6px;
-      background: #000; border-radius: 50%; transform: translateY(-50%); box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2);
-    }
-
-    /* --- 우측 상회원 전용 패널 래퍼 (신규) --- */
-    .right-panel-wrapper {
-      position: fixed; top: 0; right: -340px; height: 100vh; z-index: 100;
-      transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    .right-panel-wrapper.open { right: 0; }
-
-    .right-panel {
-      width: 340px; height: 100%; background: #16161a; border-left: 1px solid #2c2c35;
-      padding: 30px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;
-      box-shadow: -5px 0 15px rgba(0,0,0,0.5); overflow-y: auto;
-    }
-
-    .right-toggle-tab {
-      position: absolute; top: 50%; left: -42px; width: 42px; height: 180px;
-      background: #252530; border: 1px solid #3a3a45; border-right: none;
-      border-radius: 16px 0 0 16px; transform: translateY(-50%); cursor: pointer;
-      display: flex; justify-content: center; align-items: center; box-shadow: -5px 0 10px rgba(0,0,0,0.4);
-      color: #ffaa00; font-weight: 800; font-size: 0.95rem; writing-mode: vertical-rl;
-      text-orientation: upright; letter-spacing: 2px; transition: background 0.2s, color 0.2s; user-select: none;
-    }
-    .right-toggle-tab:hover { background: #ffaa00; color: #000; }
-    .right-toggle-tab::before {
-      content: ""; position: absolute; top: 50%; right: 6px; width: 6px; height: 6px;
-      background: #000; border-radius: 50%; transform: translateY(-50%); box-shadow: inset -1px 1px 2px rgba(255,255,255,0.2);
-    }
-
-    /* 타이틀 및 테스트 버튼 영역 */
-    .title-area {
-      display: flex; align-items: center; justify-content: space-between; color: #fff;
-      border-bottom: 1px solid #2c2c35; padding-bottom: 10px;
-    }
-    .title-text { font-size: 1.25rem; font-weight: 800; }
-    .test-launcher {
-      display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.2s;
-    }
-    .test-launcher:hover { transform: scale(1.1); }
-    .test-label { font-size: 0.65rem; color: #ff4757; font-weight: bold; margin-bottom: 3px; }
-    .bell-icon { font-size: 1.3rem; }
-
-    /* 볼륨 조절 */
-    .vol-area { display: flex; align-items: center; gap: 15px; background: #22222a; padding: 12px 15px; border-radius: 8px; }
-    .vol-label { font-size: 0.85rem; font-weight: bold; color: #bbb; white-space: nowrap; }
-    input[type="range"] { flex: 1; accent-color: #ff4757; cursor: pointer; }
-    
-    /* 시간 옵션 */
-    .options { display: flex; gap: 10px; }
-    .opt-btn {
-      flex: 1; padding: 12px 0; background: #2a2a35; border: 2px solid transparent;
-      color: #aaa; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;
-    }
-    .opt-btn.active { background: #1e2b22; color: #4CAF50; border-color: #4CAF50; }
-    
-    /* 컨텐츠 버튼 */
-    .btn-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-    .content-btn {
-      position: relative; padding: 20px; background: #252530; border: 1px solid #3a3a45;
-      border-radius: 12px; color: #ddd; font-size: 1.05rem; font-weight: 800; cursor: pointer; overflow: hidden;
-      transition: transform 0.25s cubic-bezier(0.68, -0.55, 0.26, 1.55), background 0.3s, color 0.3s, box-shadow 0.3s;
-    }
-    .content-btn:active { transform: scale(0.92); }
-    .content-btn.active {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: #fff;
-      border-color: transparent; box-shadow: 0 5px 20px rgba(42, 82, 152, 0.6);
-    }
-    .content-btn::after {
-      content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); transform: skewX(-20deg);
-    }
-    .content-btn:hover::after { animation: shimmer 0.8s infinite; }
-    @keyframes shimmer { 100% { left: 200%; } }
-
-    /* 상회원 전용 특별 황금 버튼 */
-    .vip-btn {
-      background: linear-gradient(135deg, #b8860b 0%, #ffd700 100%); color: #000; border: none;
-      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3); text-shadow: 0 1px 2px rgba(255,255,255,0.5);
-    }
-    .vip-btn:hover { background: linear-gradient(135deg, #ffd700 0%, #ffea00 100%); color: #000; }
-    .vip-btn:active { transform: scale(0.95); }
-
-    /* --- 메인 컨텐츠 CSS --- */
-    .main-content {
-      width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow-y: auto; position: relative;
-    }
-    .container {
-      text-align: center; display: flex; flex-direction: column; align-items: center; gap: 55px; max-width: 860px; width: 100%; padding: 0 20px;
-    }
-    .promo { width: 100%; }
-    .promo-title {
-      font-size: 2.1em; font-weight: 700; margin-bottom: 18px; letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #ffffff, #cccccc); -webkit-background-clip: text; color: transparent;
-    }
-    .video-wrapper {
-      position: relative; width: 100%; aspect-ratio: 16 / 9; background: #111;
-      border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(255,255,255,0.12);
-    }
-    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-    .links { display: flex; justify-content: center; gap: 110px; width: 100%; }
-    .link { display: block; text-decoration: none; color: #fff; }
-    .link img {
-      width: 160px; height: 160px; object-fit: contain; border-radius: 30px;
-      box-shadow: 0 10px 30px rgba(255,255,255,0.15); transition: transform 0.3s ease;
-    }
-    .link img:hover { transform: scale(1.15); }
-    .label { margin-top: 15px; font-size: 1.2em; opacity: 0.8; }
-
-    /* 디버그 팝업 CSS */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 998; }
-    .modal-overlay.show { display: block; }
-    .modal {
-      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #1a1a24; padding: 30px; border-radius: 12px; border: 1px solid #444; z-index: 999; 
-      width: 340px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    }
-    .modal::-webkit-scrollbar { width: 8px; }
-    .modal::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
-    .modal::-webkit-scrollbar-track { background: #1a1a24; }
-    .modal.show { display: block; }
-    .modal h3 { margin-top: 0; color: #fff; text-align: center; margin-bottom: 20px; }
-    .test-btn { display: block; width: 100%; margin: 6px 0; padding: 10px; background: #2c2c3c; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
-    .test-btn:hover { background: #3d3d52; }
-    .close-btn { background: #ff4757; margin-top: 20px; padding: 12px; font-size: 1rem; }
-    .close-btn:hover { background: #ff6b81; }
-
-    /* 모바일용 하단 래퍼 기본 숨김 */
-    .mobile-bottom-wrapper { display: none; }
-
-    /* --- 모바일 해상도 대응 --- */
-    @media (max-width: 800px) {
-      body { display: block; overflow: auto; }
-      .panel-wrapper { display: none; } /* 기존 좌측 패널 숨김 */
-      .right-panel-wrapper { display: none; } /* PC 우측 패널도 숨김 */
-      
-      .main-content { min-height: 100vh; padding: 40px 0; padding-bottom: 80px; }
-      .container { gap: 50px; padding: 0 15px; }
-      .promo-title { font-size: 1.7em; }
-      .links { gap: 55px; }
-      .link img { width: 115px; height: 115px; border-radius: 24px; }
-      .label { font-size: 1em; }
-
-      /* 신규 모바일 하단 패널 활성화 */
-      .mobile-bottom-wrapper {
-        display: block; position: fixed; bottom: -130px; left: 0; width: 100%;
-        z-index: 101; transition: bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-      }
-      .mobile-bottom-wrapper.open { bottom: 0; }
-      
-      .mobile-bottom-panel {
-        background: #16161a; height: 130px; border-top: 1px solid #2c2c35;
-        padding: 20px; box-sizing: border-box; box-shadow: 0 -10px 20px rgba(0,0,0,0.6);
-        display: flex; flex-direction: column; justify-content: center; gap: 10px;
-      }
-      
-      .mobile-toggle-tab {
-        position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
-        height: 45px; padding: 0 30px; background: #252530; border: 1px solid #3a3a45;
-        border-bottom: none; border-radius: 20px 20px 0 0; color: #ffaa00;
-        font-weight: 800; font-size: 1rem; cursor: pointer; letter-spacing: 1px;
-        display: flex; justify-content: center; align-items: center;
-        box-shadow: 0 -5px 10px rgba(0,0,0,0.4); transition: background 0.2s; white-space: nowrap;
-      }
-      .mobile-toggle-tab:active { background: #3a3a45; }
-    }
-  </style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="슈고상회">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@700;900&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="assets/css/site.css?v=1127e">
 </head>
 <body>
+  <a class="skip" href="#view">본문으로 건너뛰기</a>
 
-  <div class="panel-wrapper" id="panelWrapper">
-    <div class="left-panel">
-      <div class="title-area">
-        <div class="title-text">컨텐츠 알리미 버튼</div>
-        <div class="test-launcher" onclick="openDebug()">
-          <span class="test-label">[사운드 테스트]</span>
-          <span class="bell-icon">🔔</span>
-        </div>
-      </div>
-      
-      <div class="vol-area">
-        <span class="vol-label">사운드 크기</span>
-        <input type="range" id="volSlider" min="0" max="100" value="50" oninput="setMasterVolume(this.value)" onmouseup="playBeepTest()">
-      </div>
+  <aside class="rail" id="rail" aria-label="메뉴">
+    <nav class="rail__nav" id="railNav"></nav>
+    <button class="rail__btn rail__toggle" id="railToggle" type="button" aria-expanded="false" data-tip="메뉴 펼치기">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h10M4 19h16M17 9l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="tx">메뉴 접기</span>
+    </button>
+  </aside>
 
-      <div class="options">
-        <button class="opt-btn" id="btn_10m" onclick="toggleOpt('10m')">10분 전에 알림</button>
-        <button class="opt-btn" id="btn_5m" onclick="toggleOpt('5m')">5분 전에 알림</button>
-      </div>
-
-      <div class="btn-list">
-        <button class="content-btn" id="btn_festa" onclick="toggleContent('festa')">슈고페스타</button>
-        <button class="content-btn" id="btn_black" onclick="toggleContent('black')">검은구름 무역단</button>
-        <button class="content-btn" id="btn_sigong" onclick="toggleContent('sigong')">시공의 균열</button>
-        <button class="content-btn" id="btn_artifact" onclick="toggleContent('artifact')">아티펙트 점령전</button>
-      </div>
-    </div>
-    <div class="toggle-tab" onclick="togglePanel()">컨텐츠 알리미</div>
+  <div class="shell">
+    <header class="bar">
+      <a class="bar__brand" href="#/home">슈고상회</a>
+      <h1 class="bar__title" id="barTitle"></h1>
+      <button class="bar__find" type="button" data-palette>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>메뉴 찾기</span><kbd>Ctrl K</kbd>
+      </button>
+      <a class="bar__msg" id="barMsg" href="#/msg" aria-label="쪽지함" hidden></a>
+      <div class="bar__user" id="barUser"></div>
+    </header>
+    <main id="view" tabindex="-1"></main>
   </div>
 
-  <div class="right-panel-wrapper" id="rightPanelWrapper">
-    <div class="right-toggle-tab" onclick="toggleRightPanel()">상회원 전용기능</div>
-    <div class="right-panel">
-      <div class="title-area">
-        <div class="title-text" style="color: #ffaa00;">상회원 전용기능</div>
-      </div>
-      <div class="btn-list">
-        <button class="content-btn vip-btn" onclick="window.open('https://map.슈고상회.com', 'ShugoCommander', 'width=1280,height=800,left=200,top=100,resizable=yes,scrollbars=yes')">슈고상황실</button>
-      </div>
-    </div>
-  </div>
+  <footer class="status" id="status">
+    <span class="status__mode" id="stMode"><i></i><span></span></span>
+    <span id="stNext" hidden>다음 레이드 <b class="cdr" id="stNextCd"></b></span>
+    <span class="status__sp"></span>
+    <span>게임 이미지 © NCSOFT</span>
+    <a href="#/intro">소개 페이지</a>
+    <span>한국 시간 <b id="kst"></b></span>
+  </footer>
 
-  <div class="mobile-bottom-wrapper" id="mobileBottomWrapper">
-    <div class="mobile-toggle-tab" id="mobileToggleTab" onclick="toggleMobilePanel()">상회원 전용기능 ▲</div>
-    <div class="mobile-bottom-panel">
-      <button class="content-btn vip-btn" style="width: 100%;" onclick="window.location.href='https://map.슈고상회.com'">슈고상황실</button>
-    </div>
-  </div>
+  <aside class="peers" id="peers" aria-label="접속 중인 상회원" hidden></aside>
+  <nav class="dock" id="dock" aria-label="모바일 메뉴"></nav>
+  <div class="tip" id="tip" role="tooltip" hidden></div>
+  <div class="peek" id="peek" hidden></div>
 
-  <div class="main-content">
-    <div class="container">
-      <div class="promo">
-        <div class="promo-title">홍보영상 보러가기</div>
-        <div class="video-wrapper">
-          <iframe src="https://www.youtube.com/embed/SdYI7jp3-tI" title="아이온2 슈고상회 레기온 이라거~" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        </div>
-      </div>
+  <dialog class="palette" id="palette" aria-label="메뉴 찾기">
+    <input class="palette__input" id="paletteInput" placeholder="어디로 갈까? 예) 무스펠, 게시판" autocomplete="off">
+    <div class="palette__list" id="paletteList" role="listbox"></div>
+  </dialog>
+  <dialog class="sheet" id="sheet"></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-      <div class="links">
-        <a href="https://open.kakao.com/o/gg3LUYhi" class="link" target="_blank" rel="noopener noreferrer">
-          <img src="kakaotalk-icon.png" alt="카카오톡 오픈채팅">
-          <div class="label">카카오톡 오픈채팅</div>
-        </a>
-        <a href="https://discord.gg/v2vCwWvA62" class="link" target="_blank" rel="noopener noreferrer">
-          <img src="discord-icon.png" alt="디스코드">
-          <div class="label">디스코드 서버</div>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="modalOverlay" onclick="closeDebug()"></div>
-  <div class="modal" id="debugModal">
-    <h3>사운드 조합 테스트</h3>
-    
-    <button class="test-btn" onclick="testPlay(['beep_sound', '1_festa_A', '10min_A', '1_festa_B'])">슈고페스타 (10분전/A)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '1_festa_A', '5min_A', '1_festa_B'])">슈고페스타 (5분전/A)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '1_festa_A', '1_festa_C'])">슈고페스타 (정시)</button>
-
-    <button class="test-btn" onclick="testPlay(['beep_sound', '2_black_A', '10min_A', '2_black_B'])">검은구름 (10분전/A)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '2_black_A', '5min_A', '2_black_B'])">검은구름 (5분전/A)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '2_black_A', '2_black_C'])">검은구름 (정시)</button>
-
-    <button class="test-btn" onclick="testPlay(['beep_sound', '3_sigong_A', '10min_A', '3_sigong_B'])">시공의 균열 (10분전/A)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '3_sigong_A', '5min_A', '3_sigong_B'])">시공의 균열 (5분전/A)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '3_sigong_A', '3_sigong_C'])">시공의 균열 (정시)</button>
-
-    <button class="test-btn" onclick="testPlay(['beep_sound', '4_artifackt_A', '10min_B', '4_artifackt_B'])">아티펙트 (10분전/B)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '4_artifackt_A', '5min_B', '4_artifackt_B'])">아티펙트 (5분전/B)</button>
-    <button class="test-btn" onclick="testPlay(['beep_sound', '4_artifackt_A', '4_artifackt_C'])">아티펙트 (정시)</button>
-
-    <button class="test-btn close-btn" onclick="closeDebug()">닫기</button>
-  </div>
-
-  <script>
-    // 0. 패널 슬라이딩 제어
-    function togglePanel() {
-      document.getElementById('panelWrapper').classList.toggle('open');
-    }
-    
-    // 신규 우측 패널 토글
-    function toggleRightPanel() {
-      document.getElementById('rightPanelWrapper').classList.toggle('open');
-    }
-
-    // 신규 모바일 하단 패널 토글
-    function toggleMobilePanel() {
-      const wrapper = document.getElementById('mobileBottomWrapper');
-      const tab = document.getElementById('mobileToggleTab');
-      wrapper.classList.toggle('open');
-      
-      if (wrapper.classList.contains('open')) {
-        tab.innerText = '상회원 전용기능 ▼';
-      } else {
-        tab.innerText = '상회원 전용기능 ▲';
-      }
-    }
-
-    // 1. 인터넷 KST 시간 동기화
-    let timeOffset = 0;
-    async function syncTime() {
-      try {
-        const res = await fetch('https://worldtimeapi.org/api/timezone/Asia/Seoul');
-        const data = await res.json();
-        const serverTime = new Date(data.datetime).getTime();
-        const localTime = Date.now();
-        timeOffset = serverTime - localTime;
-        console.log("KST 동기화 완료. 오차:", timeOffset, "ms");
-      } catch(e) {
-        console.warn("시간 동기화 실패. 내장 PC 시간 사용.");
-      }
-    }
-    syncTime();
-    function getKST() { return new Date(Date.now() + timeOffset); }
-
-    // 2. 상태 관리
-    let masterVol = 0.5;
-    let opt = { '10m': false, '5m': false };
-    let activeContents = { festa: false, black: false, sigong: false, artifact: false };
-
-    function setMasterVolume(val) { masterVol = val / 100; }
-    function playBeepTest() {
-      let audio = new Audio('sound/beep_sound.mp3');
-      audio.volume = masterVol;
-      audio.play().catch(e => console.log(e));
-    }
-    function toggleOpt(type) {
-      opt[type] = !opt[type];
-      document.getElementById('btn_' + type).classList.toggle('active', opt[type]);
-    }
-    function toggleContent(id) {
-      activeContents[id] = !activeContents[id];
-      document.getElementById('btn_' + id).classList.toggle('active', activeContents[id]);
-      let dummy = new Audio(); dummy.play().catch(e=>{});
-    }
-
-    // 3. 디버그 팝업 로직
-    function openDebug() {
-      document.getElementById('debugModal').classList.add('show');
-      document.getElementById('modalOverlay').classList.add('show');
-    }
-    function closeDebug() {
-      document.getElementById('debugModal').classList.remove('show');
-      document.getElementById('modalOverlay').classList.remove('show');
-    }
-
-    // 4. 오디오 재생 및 큐 시스템
-    let playQueue = [];
-    let isPlaying = false;
-
-    function testPlay(seq) {
-      if (isPlaying) {
-        console.log("이미 재생 중이라거! 좀 기다려라거!");
-        return; 
-      }
-      playQueue.push(...seq);
-      if (!isPlaying) playNext();
-    }
-
-    function playNext() {
-      if (playQueue.length === 0) {
-        isPlaying = false;
-        return;
-      }
-      isPlaying = true;
-      let file = playQueue.shift();
-      let audio = new Audio('sound/' + file + '.mp3');
-      audio.volume = masterVol;
-      
-      let handled = false;
-      const next = () => {
-        if (!handled) {
-          handled = true;
-          playNext();
-        }
-      };
-
-      audio.onended = next;
-      audio.onerror = (e) => { console.error('사운드 에러:', file); next(); };
-      audio.play().catch(e => { console.error('재생 막힘:', e); next(); });
-    }
-
-    // 5. 알람 체크 및 Web Worker
-    let lastCheckedMinute = -1;
-    function checkAlarms() {
-      const now = getKST();
-      const min = now.getMinutes();
-      if (min === lastCheckedMinute) return;
-      lastCheckedMinute = min; 
-
-      let triggered = []; 
-      let checks = [0];
-      if (opt['5m']) checks.push(5);
-      if (opt['10m']) checks.push(10);
-
-      if (activeContents.artifact) {
-        checks.forEach(offset => {
-          let t = new Date(now.getTime() + offset * 60000);
-          let day = t.getDay(); 
-          if ((day === 2 || day === 4 || day === 6) && t.getHours() === 21 && t.getMinutes() === 0) {
-            if (offset === 0) triggered.push({ priority: 1, seq: ['beep_sound', '4_artifackt_A', '4_artifackt_C'] });
-            else if (offset === 10) triggered.push({ priority: 1, seq: ['beep_sound', '4_artifackt_A', '10min_B', '4_artifackt_B'] });
-            else if (offset === 5) triggered.push({ priority: 1, seq: ['beep_sound', '4_artifackt_A', '5min_B', '4_artifackt_B'] });
-          }
-        });
-      }
-
-      if (activeContents.festa) {
-        checks.forEach(offset => {
-          let t = new Date(now.getTime() + offset * 60000);
-          if (t.getMinutes() === 15 || t.getMinutes() === 45) {
-            if (offset === 0) triggered.push({ priority: 2, seq: ['beep_sound', '1_festa_A', '1_festa_C'] });
-            else if (offset === 10) triggered.push({ priority: 2, seq: ['beep_sound', '1_festa_A', '10min_A', '1_festa_B'] });
-            else if (offset === 5) triggered.push({ priority: 2, seq: ['beep_sound', '1_festa_A', '5min_A', '1_festa_B'] });
-          }
-        });
-        
-        if (min === 17 || min === 47) {
-          triggered.push({ priority: 2, seq: ['beep_sound', '1min_shugo'] });
-        }
-      }
-
-      if (activeContents.black) {
-        checks.forEach(offset => {
-          let t = new Date(now.getTime() + offset * 60000);
-          if (t.getMinutes() === 0) {
-            if (offset === 0) triggered.push({ priority: 3, seq: ['beep_sound', '2_black_A', '2_black_C'] });
-            else if (offset === 10) triggered.push({ priority: 3, seq: ['beep_sound', '2_black_A', '10min_A', '2_black_B'] });
-            else if (offset === 5) triggered.push({ priority: 3, seq: ['beep_sound', '2_black_A', '5min_A', '2_black_B'] });
-          }
-        });
-      }
-
-      if (activeContents.sigong) {
-        checks.forEach(offset => {
-          let t = new Date(now.getTime() + offset * 60000);
-          let h = t.getHours();
-          if ([2, 5, 8, 11, 14, 17, 20, 23].includes(h) && t.getMinutes() === 0) {
-            if (offset === 0) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '3_sigong_C'] });
-            else if (offset === 10) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '10min_A', '3_sigong_B'] });
-            else if (offset === 5) triggered.push({ priority: 4, seq: ['beep_sound', '3_sigong_A', '5min_A', '3_sigong_B'] });
-          }
-        });
-      }
-
-      if (triggered.length > 0) {
-        triggered.sort((a, b) => a.priority - b.priority);
-        triggered.forEach(t => { playQueue.push(...t.seq); });
-        if (!isPlaying) playNext();
-      }
-    }
-
-    const workerCode = `setInterval(() => { postMessage('tick'); }, 1000);`;
-    const blob = new Blob([workerCode], { type: 'application/javascript' });
-    const worker = new Worker(URL.createObjectURL(blob));
-    worker.onmessage = function() { checkAlarms(); };
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/config.js?v=1127e"></script>
+  <script src="assets/js/store.js?v=1127e"></script>
+  <script src="assets/js/fx.js?v=1127e"></script>
+  <script src="assets/js/push.js?v=1127e"></script>
+  <script src="assets/js/tools/registry.js?v=1127e"></script>
+  <script src="assets/js/tools/raidlead.js?v=1127e"></script>
+  <script src="assets/js/tools/data-muspel.js?v=1127e"></script>
+  <script src="assets/js/tools/data-bitan.js?v=1127e"></script>
+  <script src="assets/js/intro.js?v=1127e"></script>
+  <script src="assets/js/app.js?v=1127e"></script>
 </body>
 </html>
