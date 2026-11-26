@@ -4,6 +4,9 @@
 // (가입·글·레이드가 이 브라우저에만 저장됨. 실제 운영 전 시험용)
 // Supabase 프로젝트 만든 뒤 docs/설정방법.md 순서대로 두 값을 채우면 실제 운영 모드.
 
+// 암호화 안 된 주소(http)로 들어오면 안전한 주소(https)로 바로 옮김
+if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) location.replace('https://' + location.host + location.pathname + location.search + location.hash);
+
 window.SHUGO_CONFIG = {
   supabaseUrl: 'https://vkwxwgcxekxusautwyyg.supabase.co',
   supabaseAnonKey: 'sb_publishable_PGENz-Qvli91FVOwxQsRRg_gAPC9uVy',     // 공개용 키 (비밀 키는 절대 여기 넣지 말 것)
