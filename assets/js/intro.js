@@ -48,9 +48,10 @@
       </div>
     </section>
 
-    <section class="lp-game" id="lpGame" aria-label="미니게임 와르르 슈고">
+    <section class="lp-game" id="lpGame" aria-label="미니게임">
       <div class="lp-game__in">
-        <div class="lp-game__h"><span>Mini game</span><h2>와르르 슈고</h2><p>가입 없이 바로 한 판. 대기 중인 방을 누르면 바로 들어간다거. 최대 5명.</p></div>
+        <div class="lp-game__h"><div><span>Mini game</span><h2 id="lpGameName"></h2><p id="lpGameP"></p></div>
+          <button class="lp-game__next" id="lpGameNext" aria-label="다른 게임으로 바꾸기"><span><small>다른 게임</small><b id="lpGameNextName"></b></span><i aria-hidden="true">→</i></button></div>
         <div id="lpGameBox"></div>
       </div>
     </section>
@@ -81,8 +82,17 @@
     <div class="lp-foot">게임 이미지 © NCSOFT · 슈고상회는 NCSOFT와 관계없는 유저 레기온 사이트</div></div>`;
 
     view.querySelectorAll('[data-enter]').forEach(b => b.onclick = ctx.enter);
-    const gbox = view.querySelector('#lpGameBox'), waru = window.Games && Games.get('waru');
-    if (gbox && waru) waru.render(gbox, ctx, { embed: true }); else { const sec = view.querySelector('#lpGame'); if (sec) sec.remove(); }
+    // 미니게임: 오른쪽 화살표로 게임을 바꿈 (바꿀 때 앞 게임은 끔)
+    const gbox = view.querySelector('#lpGameBox'), glist = (window.Games ? Games.list : []);
+    if (gbox && glist.length) {
+      let gi = 0, cur = null; const nextB = view.querySelector('#lpGameNext');
+      const show = i => { if (cur && cur.stop) cur.stop(); gi = (i + glist.length) % glist.length; const g = glist[gi], nx = glist[(gi + 1) % glist.length];
+        view.querySelector('#lpGameName').textContent = g.name; view.querySelector('#lpGameP').textContent = '가입 없이 바로 한 판. ' + (g.blurb || g.desc);
+        view.querySelector('#lpGameNextName').textContent = nx.name; cur = g.render(gbox, ctx, { embed: true }); };
+      if (glist.length < 2) nextB.remove(); else nextB.onclick = () => show(gi + 1);
+      show(0);
+      addEventListener('hashchange', function bye() { if (/^#?\/?$/.test(location.hash)) return; removeEventListener('hashchange', bye); if (cur && cur.stop) cur.stop(); });
+    } else { const sec = view.querySelector('#lpGame'); if (sec) sec.remove(); }
     start(view);
   }
 

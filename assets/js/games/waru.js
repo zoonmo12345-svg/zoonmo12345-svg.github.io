@@ -291,9 +291,11 @@
       const want = new URLSearchParams(location.hash.split('?')[1] || '').get('room');
       if (want && !opt.embed) join(want.toUpperCase().slice(0, 4));
     }
-    const off = () => { if (here.test(location.hash)) return; alive = false; S().bgm.pause(); removeEventListener('keydown', kd); removeEventListener('keyup', ku); removeEventListener('keydown', unlock); removeEventListener('hashchange', off); if (room) room.leave(); if (lobby) lobby.close(); };
+    const stop = () => { if (!alive) return; alive = false; S().bgm.pause(); removeEventListener('keydown', kd); removeEventListener('keyup', ku); removeEventListener('keydown', unlock); removeEventListener('hashchange', off); if (room) room.leave(); if (lobby) lobby.close(); };
+    const off = () => { if (!here.test(location.hash)) stop(); };
     addEventListener('hashchange', off);
+    return { stop };
   }
 
-  Games.add({ id: 'waru', name: '와르르 슈고', desc: '밟으면 떨어지는 발판 위에서 마지막까지 살아남기', max: MAX, live: true, thumb: 'assets/img/g-game-bg.webp', render });
+  Games.add({ id: 'waru', name: '와르르 슈고', desc: '밟으면 떨어지는 발판 위에서 마지막까지 살아남기', blurb: '밟은 발판은 곧 떨어진다거. 대기 중인 방을 누르면 바로 들어간다거. 최대 5명.', max: MAX, live: true, thumb: 'assets/img/g-game-bg.webp', render });
 })();
