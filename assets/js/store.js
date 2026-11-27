@@ -88,6 +88,8 @@
 
       // 관리자: 비밀번호만 빼고 전부 볼 수 있음. 비밀번호는 새로 정해주기만 가능
       async listProfiles() { const { data, error } = await sb.rpc('admin_list_profiles'); err(error); return data; },
+      async listPending() { const { data, error } = await sb.rpc('pending_signups'); err(error); return data || []; },
+      async decidePending(id, approve) { const { error } = await sb.rpc('pending_decide', { target: id, approve }); err(error); },
       async listMembers() { const { data, error } = await sb.from('profiles').select('id,' + RP).eq('status', 'approved').order('char_name'); err(error); return data; },
       async setStatus(id, status) { const { error } = await sb.rpc('admin_set_status', { target: id, new_status: status }); err(error); },
       async setRole(id, role) { const { error } = await sb.rpc('admin_set_role', { target: id, new_role: role }); err(error); },
@@ -197,6 +199,8 @@
       async changePassword(pw) { meRaw().pw = pw; save(); },
 
       async listProfiles() { admin(); return db.users.map(u => ({ ...pub(u), contact: u.contact || '' })).reverse(); },
+      async listPending() { const m = approved(); need(['ai', 'manager', 'owner'].includes(m.role), '볼 수 없어'); return db.users.filter(u => u.status === 'pending').map(u => ({ id: u.id, char_name: u.char_name, main_char: u.main_char, created_at: u.created_at })).reverse(); },
+      async decidePending(id, approve) { const m = approved(); need(['ai', 'manager', 'owner'].includes(m.role), '할 수 없어'); const t = db.users.find(u => u.id === id); need(t && t.status === 'pending', '승인 대기 중인 사람이 아니야'); t.status = approve ? 'approved' : 'rejected'; save(); emit('change'); },
       async listMembers() { approved(); return db.users.filter(u => u.status === 'approved').map(pub); },
       async setStatus(id, status) { guard(id).status = status; save(); emit('change'); },
       async setRole(id, role) { const m = owner(), t = db.users.find(u => u.id === id); need(t.id !== m.id && t.role !== 'owner' && ['member', 'manager'].includes(role), '바꿀 수 없는 등급이야'); t.role = role; save(); emit('change'); },

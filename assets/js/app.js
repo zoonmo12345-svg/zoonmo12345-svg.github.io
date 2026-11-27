@@ -29,10 +29,11 @@
   const nick = p => p?.char_name || p?.username || '?';
   const avatar = (p, cls = '') => p?.avatar_url ? `<img class="avatar ${cls}" src="${esc(p.avatar_url)}" alt="">` : `<span class="avatar ${cls}">${esc(nick(p).slice(0, 1))}</span>`;
   const me = () => S.me();
-  const isOk = () => me()?.status === 'approved';
+  const isOk = () => me()?.status === 'approved' && me().role !== 'ai';
   const isAdmin = () => isOk() && (me().role === 'owner' || me().role === 'manager');     // 상회장 + 관리슈고
   const isOwner = () => isOk() && me().role === 'owner';
-  const roleTag = u => u.role === 'owner' ? '<span class="tag tag--gold">상회장</span>' : u.role === 'manager' ? '<span class="tag tag--teal">관리슈고</span>' : '';
+  const isAi = () => me()?.status === 'approved' && me().role === 'ai';                                          // 보조AI: 승인 대기 명단 보기 + 승인·거절만
+  const roleTag = u => u.role === 'owner' ? '<span class="tag tag--gold">상회장</span>' : u.role === 'manager' ? '<span class="tag tag--teal">관리슈고</span>' : u.role === 'ai' ? '<span class="tag">보조AI</span>' : '';
   const rid = v => S.live ? Number(v) : v;
   const go = h => { location.hash = h; };
 
@@ -78,6 +79,7 @@
     a.push({ href: '#/games', key: 'games', name: '미니게임', tip: '미니게임', icon: IC.game });
     if (C.showDownloads) a.push({ href: '#/downloads', key: 'downloads', name: '다운로드', tip: '다운로드', icon: IC.down });
     if (isAdmin()) a.push({ sep: 1 }, { href: '#/admin', key: 'admin', name: '사이트관리', tip: '사이트관리', icon: IC.admin, n: pendingCount });
+    if (isAi()) a.push({ sep: 1 }, { href: '#/pending', key: 'pending', name: '승인 대기', tip: '승인 대기', icon: IC.admin, n: pendingCount });
     return a;
   }
   function renderNav(cur) {
@@ -453,6 +455,28 @@
     view.innerHTML = `<div class="page page--narrow"><div class="ph"><h1>다운로드</h1></div><div class="list">${list.length ? list.map(d => `<div><span class="t">${esc(d.name)} <span class="mut">v${esc(d.version)}</span></span><span class="m">${esc(d.desc || '')}</span><a class="btn btn--gold btn--sm" href="${esc(d.url)}" download>받기</a></div>`).join('') : '<div class="mut">아직 올라온 게 없어</div>'}</div></div>`;
   }
 
+  // ───── 승인 대기 (보조AI · 관리자) — 명단 보기 + 승인·거절 ─────
+  async function pendingPage() {
+    if (!isAi() && !isAdmin()) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>볼 수 없는 화면이야</b></div></div>`; return; }
+    const list = await S.listPending().catch(e => { toast(e.message, true); return []; });
+    pendingCount = list.length; renderNav('pending');
+    document.title = `승인 대기 ${list.length}명 · 슈고상회`;
+    view.innerHTML = `<div class="page page--narrow">
+      <div class="ph"><div><h1>승인 대기 <span id="pendN">${list.length}</span>명</h1><p>가입 신청하고 승인을 기다리는 사람. 1분마다 새로 읽어.</p></div></div>
+      ${list.length ? `<div class="list">${list.map(u => `<div class="pend"><div><span class="t">${esc(u.char_name || '')}</span><span class="m">본캐 ${esc(u.main_char || '-')} · ${fmtDate(u.created_at)} ${fmtTime(u.created_at)} 신청</span></div><div class="pend__b"><button class="btn btn--gold btn--sm" data-ok="${u.id}" data-nm="${esc(u.char_name || '')}">승인</button><button class="btn btn--sm" data-no="${u.id}" data-nm="${esc(u.char_name || '')}">거절</button></div></div>`).join('')}</div>` : '<div class="empty"><b>승인 대기 0명</b><p>지금 기다리는 사람이 없어.</p></div>'}
+    </div>`;
+    const decide = (b, yes) => b.onclick = async () => {
+      if (!confirm(`${b.dataset.nm} ${yes ? '승인' : '거절'}할까?`)) return;
+      b.disabled = true;
+      try { await S.decidePending(yes ? b.dataset.ok : b.dataset.no, yes); toast(`${b.dataset.nm} ${yes ? '승인했어' : '거절했어'}`); } catch (e) { toast(e.message, true); }
+      pendingPage();
+    };
+    view.querySelectorAll('[data-ok]').forEach(b => decide(b, true));
+    view.querySelectorAll('[data-no]').forEach(b => decide(b, false));
+    clearTimeout(pendingPage.t);
+    pendingPage.t = setTimeout(() => { if (location.hash.startsWith('#/pending')) pendingPage(); }, 60000);
+  }
+
   // ───── 사이트관리 ─────
   async function admin(tab = 'pending') {
     if (!isAdmin()) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>관리자만 볼 수 있어</b></div></div>`; return; }
@@ -468,7 +492,7 @@
       <td class="mut">${ago(u.created_at)}</td><td><div class="acts">
         ${u.status !== 'approved' ? `<button class="btn btn--gold btn--sm" data-st="approved" data-u="${u.id}">승인</button>` : ''}
         ${u.status === 'pending' ? `<button class="btn btn--sm" data-st="rejected" data-u="${u.id}">거절</button>` : ''}
-        ${tab === 'members' && u.status === 'approved' && u.id !== me().id ? `<button class="btn btn--sm" data-st="pending" data-u="${u.id}">승인 취소</button>${isOwner() && u.role !== 'owner' ? `<button class="btn btn--sm" data-role="${u.role === 'manager' ? 'member' : 'manager'}" data-u="${u.id}">${u.role === 'manager' ? '관리슈고 해제' : '관리슈고 임명'}</button>` : ''}` : ''}
+        ${tab === 'members' && u.status === 'approved' && u.id !== me().id ? `<button class="btn btn--sm" data-st="pending" data-u="${u.id}">승인 취소</button>${isOwner() && u.role !== 'owner' && u.role !== 'ai' ? `<button class="btn btn--sm" data-role="${u.role === 'manager' ? 'member' : 'manager'}" data-u="${u.id}">${u.role === 'manager' ? '관리슈고 해제' : '관리슈고 임명'}</button>` : ''}` : ''}
         ${tab === 'members' ? `<button class="btn btn--plain btn--sm" data-pw="${u.id}" data-name="${esc(nick(u))}">비번 초기화</button>` : ''}</div></td></tr>`;
     const table = rows => `<table class="tbl"><thead><tr><th>본캐 닉네임</th><th>사이트 닉네임</th><th>로그인 계정</th><th>비상연락처</th><th>상태</th><th>가입</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
     if (tab === 'pending') body.innerHTML = pending.length ? table(pending.map(row).join('')) : `<div class="empty"><b>승인 기다리는 사람이 없어</b></div>`;
@@ -599,11 +623,13 @@
       else if (key === 'msg') await msgPage();
       else if (key === 'downloads') downloads();
       else if (key === 'admin') await admin(parts[1]);
+      else if (key === 'pending') await pendingPage();
       else go('#/home');
     } catch (e) { console.error(e); toast('화면을 못 불러왔어: ' + e.message, true); }
     Fx.refresh(view);
   }
   async function refreshPending() {
+    if (isAi()) { try { pendingCount = (await S.listPending()).length; } catch (e) {} return; }
     if (!isAdmin()) { pendingCount = 0; return; }
     try { pendingCount = (await S.listProfiles()).filter(u => u.status === 'pending').length; } catch (e) {}
   }
