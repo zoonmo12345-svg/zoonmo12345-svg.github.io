@@ -127,7 +127,10 @@
       e.hold = hold;
       e.vy = clamp(e.vy + (hold ? -e.c.up : e.c.dn) * .8 * dt, -140, 140); e.y += e.vy * dt;
       if (e.y < 4) { e.y = 4; e.vy = 0; } if (e.y > VH - PH - 4) { e.y = VH - PH - 4; e.vy = 0; }
-      e.spd = GHOST_V; e.x = Math.min(L - 40, e.x + e.spd * dt); // 유령은 누구든 같은 속도로 일정하게 감
+      // 유령은 누구든 같은 속도. W 를 안 누르면 점점 느려지고, 바닥에 내려앉아 있으면 멈춰서 기다림 (봇은 늘 일정)
+      const low = e.y >= VH - PH - 4.5;
+      if (e.kind === 'bot' || hold) e.spd = Math.min(GHOST_V, e.spd + 260 * dt); else e.spd = Math.max(0, e.spd * Math.exp(-(low ? 4 : .6) * dt) - (low ? 40 : 0) * dt);
+      e.x = Math.min(L - 40, e.x + e.spd * dt);
       if (t && e.gcool <= 0 && Math.hypot(t.x - e.x, t.y - e.y) < 15) { e.latch = t.id; e.got = 0; if (e.kind === 'me' || t.kind === 'me') sfx.latch(); }
     }
     sim.top = e => e.c.vmax * (1 + .05 * e.stacks) * (1 + FLOW_K * e.flow);
@@ -296,7 +299,7 @@
           <div class="g-how"><b>조작법</b>
             <ul><li><kbd>W</kbd> 꾹 누르면 위로, 떼면 아래로 (키는 이거 하나라거)</li><li>폰은 화면을 꾹 누르면 된다거</li></ul>
             <p>앞으로는 저절로 날아간다거. 안 박고 계속 날면 속도가 끝없이 붙는다거. 돌·얼음·상자에 박으면 체력이 깎이고 속도가 반 토막 난다거. 아슬아슬하게 비껴가면 NICE! 순간 가속이라거. 초록 화살표는 스피드업, 하트는 체력 회복, 별은 잠깐 무적에 급가속이라거. 아이템은 먼저 먹은 슈고 것이고 3초 뒤에 다시 생긴다거.</p>
-            <p>체력이 다 떨어지면 유령이 된다거. 유령은 지형·방해물을 그냥 지나가고, 살아 있는 슈고한테 달라붙어 체력을 빨면 체력 절반으로 부활한다거. 붙들린 슈고는 무거워진다거(별을 먹으면 떼어낸다거). 3등까지만 순위에 들고, 골인하면 관전하면서 <kbd>W</kbd>로 볼 슈고를 바꾼다거.</p></div></div>
+            <p>체력이 다 떨어지면 유령이 된다거. 유령은 지형·방해물을 그냥 지나가고, W를 안 누르면 점점 느려지다가 바닥에 내려앉으면 멈춰서 기다린다거. 살아 있는 슈고한테 달라붙어 체력을 빨면 체력 절반으로 부활한다거. 붙들린 슈고는 무거워진다거(별을 먹으면 떼어낸다거). 3등까지만 순위에 들고, 골인하면 관전하면서 <kbd>W</kbd>로 볼 슈고를 바꾼다거.</p></div></div>
         <aside class="pn g-side"><div id="side"></div><div class="g-chat" id="chat" hidden></div></aside>
       </div></div>`;
     const $ = s => view.querySelector(s), cv = $('#gc'), g = cv.getContext('2d'), side = $('#side'), over = $('#over'), tags = $('#tags'), hud = $('#hud'), trk = $('#trk'), mine = $('#mine'), hpb = $('#hpb'), pips = $('#pips').children, spdEl = $('#spd');
@@ -453,7 +456,7 @@
         mine.style.left = ((m.x + PW / 2 - cam) / VW * 100) + '%'; mine.style.top = (Math.min(VH - 22, m.y + PH / 2 + 25) / VH * 100) + '%';
         hpb.style.width = clamp((m.ghost ? m.got / sim.need(m) : m.hp / m.c.hp) * 100, 0, 100) + '%'; hpb.className = m.ghost || m.hp / m.c.hp > .35 ? '' : 'low';
         for (let i = 0; i < 5; i++) pips[i].className = i < m.stacks ? 'on' : '';
-        spdEl.textContent = m.ghost ? '유령' : m.heavy ? '무겁다거!' : Math.round(m.spd) + ' km/h'; spdEl.className = m.heavy ? 'heavy' : m.star > 0 ? 'star' : m.spd > m.c.vmax * 1.25 ? 'hot' : '';
+        spdEl.textContent = m.ghost ? (m.latch ? '쪽쪽' : '유령 ' + Math.round(m.spd)) : m.heavy ? '무겁다거!' : Math.round(m.spd) + ' km/h'; spdEl.className = m.heavy ? 'heavy' : m.star > 0 ? 'star' : m.spd > m.c.vmax * 1.25 ? 'hot' : '';
         trk.querySelectorAll('img').forEach(el => { const e = sim.ents.find(x => x.id === el.dataset.id); if (!e || e.gone) { el.style.display = 'none'; return; } el.style.left = clamp(e.x / sim.L * 100, 0, 100) + '%'; });
       }
     }
