@@ -5,9 +5,9 @@
 (function () {
   const VW = 384, VH = 216, SC = 2, PW = 16, PH = 16, HIT = 8, SPR = 48, MAX = 5, M = 10; // 10픽셀 = 1m
   const L_MIN = 900, L_MAX = 6000, L_STEP = 300, L_DEF = 2700, AVG = 215; // AVG = 봇 평균 속도(픽셀/초), 예상 시간 표시용
-  const FLOW_T = 28 / 3, FLOW_K = .45, DRAIN = 14; // 안 박고 FLOW_T 초 날 때마다 속도 +45% (한도 없음) · DRAIN = 유령이 1초에 빠는 체력
+  const FLOW_T = 28 / 3, FLOW_K = .45, DRAIN = 14, GHOST_V = 170, RESPAWN = 3; // 안 박고 FLOW_T 초 날 때마다 속도 +45% (한도 없음) · DRAIN = 유령이 1초에 빠는 체력
   const SND = 'assets/snd/', BGM = SND + 'copter-bgm.mp3';
-  const FX = { hit: SND + 'hc-hit.mp3', pop: SND + 'hc-pop.mp3', speed: SND + 'hc-speed.mp3', heal: SND + 'hc-heal.mp3', star: SND + 'hc-star.mp3', ko: SND + 'hc-ko.mp3', wow: SND + 'hc-wow.mp3', kids: SND + 'hc-kidswow.mp3', meow: SND + 'hc-meow.mp3', pyong: SND + 'hc-pyong.mp3', nice: SND + 'hc-nice.mp3', latch: SND + 'hc-latch.mp3' };
+  const FX = { pop: SND + 'hc-pop.mp3', speed: SND + 'hc-speed.mp3', heal: SND + 'hc-heal.mp3', star: SND + 'hc-star.mp3', ko: SND + 'hc-ko.mp3', wow: SND + 'hc-wow.mp3', kids: SND + 'hc-kidswow.mp3', meow: SND + 'hc-meow.mp3', step: SND + 'hc-step.mp3', b1: SND + 'hc-bump1.mp3', b2: SND + 'hc-bump2.mp3', b3: SND + 'hc-bump3.mp3', b4: SND + 'hc-bump4.mp3', nice: SND + 'hc-nice.mp3', latch: SND + 'hc-latch.mp3' };
   const rnd = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const clampL = n => clamp(Math.round((+n || L_DEF) / L_STEP) * L_STEP, L_MIN, L_MAX);
@@ -52,10 +52,10 @@
   let meowAt = 0;
   const meow = rate => { const n = performance.now(); if (n - meowAt < 1500) return; meowAt = n; S().play(FX.meow, .8, rate); };
   const sfx = {
-    flap: () => S().play(FX.pyong, .55),
+    flap: () => S().play(FX.step, .6),
     nice: () => S().play(FX.nice, .8),
     latch: () => S().play(FX.latch, .8),
-    hit: () => { S().play(FX.hit, .7); meow(1); },
+    hit: () => S().play([FX.b1, FX.b2, FX.b3, FX.b4][Math.floor(Math.random() * 4)], .75), // 박을 때마다 넷 중 하나
     crush: () => S().play(FX.pop, .6),
     speed: () => S().play(FX.speed, .7),
     heal: () => S().play(FX.heal, .7),
@@ -85,7 +85,7 @@
       const q = rand(), kind = q < .5 ? 0 : q < .82 ? 1 : 2; let ix = x;
       for (let t = 0; t < 3 && obs.some(o => Math.abs(o.x - ix) < 34); t++) ix += 36;
       const top = ceil(ix) + 20, bot = floor(ix) - 20;
-      items.push({ x: ix, y: top + rand() * (bot - top), kind, got: {} });
+      items.push({ x: ix, y: top + rand() * (bot - top), kind, at: 0 }); // at = 다시 나타나는 시각 (누가 먹으면 3초 뒤)
       x = ix + 200 + rand() * 200;
     }
     items.sort((a, b) => a.x - b.x);
@@ -96,6 +96,7 @@
     sim.oy = oy;
     const spark = (x, y, col, k, sp) => { if (Math.abs(x - sim.cam - VW / 2) > VW) return; for (let i = 0; i < k; i++) sim.fx.push({ x, y, vx: rnd(-sp, sp) + 30, vy: rnd(-sp, sp * .6), t: 0, life: rnd(.3, .7), col: col[Math.floor(Math.random() * col.length)], s: Math.random() < .4 ? 3 : 2 }); };
     sim.smash = j => { const o = obs[j]; if (!o || o.dead) return false; o.dead = sim.time || .001; spark(o.x, oy(o), OB_COL[o.kind], 14, 80); return true; };
+    sim.take = j => { const it = items[j]; if (it) it.at = sim.time + RESPAWN; };
     sim.finish = e => { if (!sim.first) sim.first = sim.time; if (hooks.onFinish) hooks.onFinish(e); };
     sim.place = () => ents.slice().sort((a, b) => (a.gone - b.gone) || ((b.fin ? 1 : 0) - (a.fin ? 1 : 0)) || (a.fin && b.fin ? a.fin - b.fin : (a.ghost - b.ghost) || b.x - a.x));
     // 골인한 뒤엔 관전: 아직 달리는 슈고를 따라감 (W 로 바꿈)
@@ -107,10 +108,10 @@
       return me;
     };
     function die(e) { e.hp = 0; e.ghost = true; e.ko = .8; e.vy = -90; e.stacks = 0; e.flow = 0; e.got = 0; e.latch = null; e.gcool = .5; if (e.kind === 'me') sfx.ko(); }
-    function revive(e, v) { e.ghost = false; e.latch = null; e.got = 0; e.hp = Math.round(e.c.hp * .5); e.inv = 2; e.vy = -60; e.flow = 0; if (v) { e.spd = v.spd * .9; e.y = clamp(v.y - 22, ceil(e.x) + 2, floor(e.x) - PH - 2); } if (e.kind === 'me') sfx.heal(); }
+    function revive(e, v) { e.ghost = false; e.latch = null; e.got = 0; e.hp = Math.round(e.c.hp * .5); e.inv = 2; e.vy = -60; e.flow = v ? v.flow * .5 : 0; if (v) { e.spd = v.spd * .9; e.y = clamp(v.y - 22, ceil(e.x) + 2, floor(e.x) - PH - 2); } if (e.kind === 'me') sfx.heal(); }
     // 유령: 지형·방해물 무시. 살아 있는 슈고한테 달라붙어 체력을 빨고, 자기 체력 절반만큼 빨면 부활
     function ghostFly(e, dt, hold) {
-      if (e.ko > 0) { e.ko -= dt; e.vy += 300 * dt; e.y = clamp(e.y + e.vy * dt, 4, VH - PH - 4); e.spd *= Math.exp(-2 * dt); e.x += e.spd * dt; return; }
+      if (e.ko > 0) { e.ko -= dt; e.vy += 300 * dt; e.y = clamp(e.y + e.vy * dt, 4, VH - PH - 4); e.spd = GHOST_V; e.x = Math.min(L - 40, e.x + e.spd * dt); return; }
       if (e.gcool > 0) e.gcool -= dt;
       if (e.latch) {
         const v = ents.find(x => x.id === e.latch);
@@ -126,8 +127,7 @@
       e.hold = hold;
       e.vy = clamp(e.vy + (hold ? -e.c.up : e.c.dn) * .8 * dt, -140, 140); e.y += e.vy * dt;
       if (e.y < 4) { e.y = 4; e.vy = 0; } if (e.y > VH - PH - 4) { e.y = VH - PH - 4; e.vy = 0; }
-      const want = t ? Math.max(30, t.spd + clamp((t.x - e.x) * 1.5, -140, 240)) : 40;
-      e.spd += (want - e.spd) * Math.min(1, dt * 3); e.x = Math.min(L - 40, e.x + e.spd * dt);
+      e.spd = GHOST_V; e.x = Math.min(L - 40, e.x + e.spd * dt); // 유령은 누구든 같은 속도로 일정하게 감
       if (t && e.gcool <= 0 && Math.hypot(t.x - e.x, t.y - e.y) < 15) { e.latch = t.id; e.got = 0; if (e.kind === 'me' || t.kind === 'me') sfx.latch(); }
     }
     sim.top = e => e.c.vmax * (1 + .05 * e.stacks) * (1 + FLOW_K * e.flow);
@@ -145,10 +145,10 @@
       if (e.y < top) { e.y = top; if (e.vy < 0) e.vy = 0; drag = true; }
       if (e.y > bot) { e.y = bot; if (e.vy > 0) e.vy = 0; drag = true; }
       const st = e.star > 0;
-      if (drag && !st) e.flow = Math.max(0, e.flow - dt * .5); else e.flow += dt / FLOW_T;
+      if (!drag || st) e.flow += dt / FLOW_T; // 천장·바닥에 닿아 있는 동안은 속도가 더 안 붙기만 함
       let target = sim.top(e);
-      if (st) target *= 1.45; else if (drag) target *= .6;
-      if (e.spd < target) e.spd = Math.min(target, e.spd + c.acc * (st ? 4 : 1) * dt); else e.spd += (target - e.spd) * Math.min(1, dt * 2.5);
+      if (st) target *= 1.45; else if (drag) target *= .92;
+      if (e.spd < target) e.spd = Math.min(target, e.spd + c.acc * (st ? 4 : 1) * dt); else e.spd += (target - e.spd) * Math.min(1, dt * 1.2);
       e.x += e.spd * dt;
       const mx = e.x + PW / 2, my = e.y + PH / 2;
       while (e.oi < obs.length && obs[e.oi].x < mx - 50) e.oi++;
@@ -165,12 +165,12 @@
       while (e.pi < obs.length && obs[e.pi].x <= mx) {
         const o = obs[e.pi++]; if (o.dead || st || e.inv > 0) continue;
         const gap = Math.abs(oy(o) - my) - (o.r + HIT);
-        if (gap >= 0 && gap < 9) { e.spd += 60; e.flow += .1; sim.pops.push({ x: mx + 34, y: e.y + 6, t: 0 }); spark(mx, my, ['#7fe7ff', '#fff'], 6, 50); if (mine) sfx.nice(); }
+        if (gap >= 0 && gap < 22) { e.spd += 60; e.flow += .1; sim.pops.push({ x: mx + 34, y: e.y + 6, t: 0 }); spark(mx, my, ['#7fe7ff', '#fff'], 6, 50); if (mine) sfx.nice(); }
       }
       while (e.ii < items.length && items[e.ii].x < mx - 40) e.ii++;
       for (let j = e.ii; j < items.length && items[j].x < mx + 40; j++) {
-        const it = items[j]; if (it.got[e.id] || Math.hypot(it.x - mx, it.y - my) > 17) continue;
-        it.got[e.id] = 1;
+        const it = items[j]; if (sim.time < it.at || Math.hypot(it.x - mx, it.y - my) > 17) continue;
+        it.at = sim.time + RESPAWN; if (mine && hooks.onItem) hooks.onItem(j);
         if (it.kind === 0) { e.stacks = Math.min(5, e.stacks + 1); e.spd += 22; if (mine) sfx.speed(); }
         else if (it.kind === 1) { e.hp = Math.min(c.hp, e.hp + 30); if (mine) sfx.heal(); }
         else { e.star = 4 + (c.star || 0); if (mine) sfx.star(); }
@@ -182,7 +182,7 @@
       const a = e.ai; a.t -= dt; if (a.t <= 0) { a.t = rnd(.4, 1.2); a.off = rnd(-22, 22); }
       const cx = e.x + PW / 2, cy = e.y + PH / 2;
       let ty = (ceil(cx + 40) + floor(cx + 40)) / 2 + a.off;
-      for (let j = e.ii; j < items.length && items[j].x < cx + 130; j++) { const it = items[j]; if (!it.got[e.id] && it.x > cx + 6) { ty = it.y; break; } }
+      for (let j = e.ii; j < items.length && items[j].x < cx + 130; j++) { const it = items[j]; if (sim.time >= it.at && it.x > cx + 6) { ty = it.y; break; } }
       if (!(e.star > 0)) for (let j = e.oi; j < obs.length && obs[j].x < cx + 30 + e.spd * .45; j++) {
         const o = obs[j]; if (o.dead || o.x < cx - 10 || ((j * 37 + a.salt) % 100) / 100 > a.skill) continue;
         const y = oy(o), need = o.r + HIT + 7; if (Math.abs(y - ty) > need && Math.abs(y - cy) > need) continue;
@@ -235,7 +235,7 @@
       g.drawImage(obSpr(o.kind, o.r), x - o.r, sim.oy(o) - o.r);
     }
     for (const it of sim.items) {
-      const x = it.x - cam; if (x < -12) continue; if (x > VW + 12) break; if (meId && it.got[meId]) continue;
+      const x = it.x - cam; if (x < -12) continue; if (x > VW + 12) break; if (sim.time < it.at) continue;
       const y = it.y + Math.sin(t * 4 + it.x) * 2.5, s = 15 + Math.sin(t * 6 + it.x) * 1;
       g.drawImage(IT[it.kind], x - s / 2, y - s / 2, s, s);
     }
@@ -295,7 +295,7 @@
           <div class="g-bar"><label class="g-vol"><span>소리</span><input type="range" id="vol" min="0" max="100" step="1" aria-label="전체 소리 크기"><b id="volv"></b></label></div>
           <div class="g-how"><b>조작법</b>
             <ul><li><kbd>W</kbd> 꾹 누르면 위로, 떼면 아래로 (키는 이거 하나라거)</li><li>폰은 화면을 꾹 누르면 된다거</li></ul>
-            <p>앞으로는 저절로 날아간다거. 안 박고 계속 날면 속도가 끝없이 붙는다거. 돌·얼음·상자에 박으면 체력이 깎이고 속도가 반 토막 난다거. 아슬아슬하게 비껴가면 NICE! 순간 가속이라거. 초록 화살표는 스피드업, 하트는 체력 회복, 별은 잠깐 무적에 급가속이라거.</p>
+            <p>앞으로는 저절로 날아간다거. 안 박고 계속 날면 속도가 끝없이 붙는다거. 돌·얼음·상자에 박으면 체력이 깎이고 속도가 반 토막 난다거. 아슬아슬하게 비껴가면 NICE! 순간 가속이라거. 초록 화살표는 스피드업, 하트는 체력 회복, 별은 잠깐 무적에 급가속이라거. 아이템은 먼저 먹은 슈고 것이고 3초 뒤에 다시 생긴다거.</p>
             <p>체력이 다 떨어지면 유령이 된다거. 유령은 지형·방해물을 그냥 지나가고, 살아 있는 슈고한테 달라붙어 체력을 빨면 체력 절반으로 부활한다거. 붙들린 슈고는 무거워진다거(별을 먹으면 떼어낸다거). 3등까지만 순위에 들고, 골인하면 관전하면서 <kbd>W</kbd>로 볼 슈고를 바꾼다거.</p></div></div>
         <aside class="pn g-side"><div id="side"></div><div class="g-chat" id="chat" hidden></div></aside>
       </div></div>`;
@@ -320,6 +320,7 @@
       const list = roster.map(r => ({ ...r, kind: r.bot ? 'bot' : r.id === me.id ? 'me' : 'remote' }));
       sim = makeSim(list, {
         onSmash: j => { if (room && mode === 'net') room.send({ t: 'b', i: j }); },
+        onItem: j => { if (room && mode === 'net') room.send({ t: 'i', i: j }); },
         onFinish: e => { if (e.kind === 'me') { sfx.goal(); if (room && mode === 'net') room.send({ t: 'f', id: me.id, tm: Math.round(e.fin * 100) / 100 }); } },
         onOver: rank => showResult(rank)
       }, { len: n, seed, solo });
@@ -365,6 +366,7 @@
           else if (m.t === 'p') { const e = sim.ents.find(x => x.id === m.id); if (e && e.kind === 'remote') { e.tx = m.x; e.ty = m.y; e.spd = m.v; e.vy = m.w || 0; e.hp = m.h; e.star = m.s ? Math.max(e.star, .4) : 0; e.ko = m.k ? .3 : 0; e.inv = m.n ? .3 : 0; e.hold = !!m.u; e.stacks = m.c | 0; e.ghost = !!m.g; e.latch = m.a || null; } }
           else if (m.t === 'c') chat.got(m);
           else if (m.t === 'b') sim.smash(m.i);
+          else if (m.t === 'i') sim.take(m.i);
           else if (m.t === 'f') { const e = sim.ents.find(x => x.id === m.id); if (e && !e.fin) { e.fin = m.tm || sim.time; sim.finish(e); } }
         }
       });
