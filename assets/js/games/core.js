@@ -63,6 +63,19 @@
       };
       return api;
     },
+    // 방 채팅: 그 방에 있는 사람끼리만 보임 (저장 안 됨). box = 채팅을 넣을 칸
+    chat(box, esc) {
+      box.innerHTML = '<div class="g-chat__h">방 채팅<span>이 방에서만 보인다거</span></div><div class="g-chat__log"></div><form class="g-chat__f"><input class="input" maxlength="60" placeholder="할 말을 쓰라거" aria-label="방 채팅 입력"><button class="btn" type="submit">보내기</button></form>';
+      const log = box.querySelector('.g-chat__log'), form = box.querySelector('form'), inp = box.querySelector('input'); let room = null, lastAt = 0;
+      const add = (name, text, vip, cls) => { const p = document.createElement('p'); if (cls) p.className = cls; p.innerHTML = (name ? '<b class="' + (vip ? 'vip' : '') + '">' + esc(name) + '</b>' : '') + '<span>' + esc(text) + '</span>'; log.appendChild(p); while (log.children.length > 60) log.firstChild.remove(); log.scrollTop = log.scrollHeight; };
+      form.onsubmit = e => { e.preventDefault(); const v = inp.value.trim().slice(0, 60), now = Date.now(); if (!v || !room || now - lastAt < 600) return; lastAt = now; inp.value = ''; room.send({ t: 'c', n: room.me.name, v: room.me.member ? 1 : 0, m: v }); add(room.me.name, v, room.me.member, 'me'); };
+      inp.addEventListener('keydown', e => e.stopPropagation()); inp.addEventListener('keyup', e => e.stopPropagation());
+      return {
+        open(r) { room = r; log.innerHTML = ''; box.hidden = false; add('', '방에 들어왔다거. 여기 쓴 말은 이 방 사람만 본다거.', false, 'sys'); },
+        close() { room = null; box.hidden = true; },
+        got(m) { if (room && m && typeof m.m === 'string') add(String(m.n || '').slice(0, 12), m.m.slice(0, 60), !!m.v); }
+      };
+    },
     newCode: () => Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random() * 24)]).join('')
   };
 

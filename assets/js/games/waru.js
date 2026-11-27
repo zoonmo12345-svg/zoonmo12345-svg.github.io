@@ -149,10 +149,10 @@
           <div class="g-how"><b>조작법</b>
             <ul><li><kbd>←</kbd><kbd>→</kbd> 또는 <kbd>A</kbd><kbd>D</kbd> 이동</li><li><kbd>스페이스</kbd> 또는 <kbd>↑</kbd> 점프</li><li>폰은 화면 아래 <kbd>◀</kbd><kbd>▶</kbd><kbd>점프</kbd> 버튼</li></ul>
             <p>밟은 발판은 0.5초 뒤에 떨어진다거. 계속 움직이면서 아래로 내려가라거. 용암에 빠지면 탈락, 마지막까지 남으면 승리! 빨간 화살표가 나라거.</p></div></div>
-        <aside class="pn g-side" id="side"></aside>
+        <aside class="pn g-side"><div id="side"></div><div class="g-chat" id="chat" hidden></div></aside>
       </div></div>`;
     const $ = s => view.querySelector(s), cv = $('#gc'), g = cv.getContext('2d'), side = $('#side'), over = $('#over'), tags = $('#tags'), hud = $('#hud');
-    const input = { l: false, r: false, j: false };
+    const input = { l: false, r: false, j: false }, chat = Games.chat($('#chat'), esc);
     let sim = null, mode = 'demo', room = null, lobby = null, rooms = [], alive = true, last = 0, sendT = 0, countdown = 0, shown = '', playing = false, me = Games.me();
     let floors = clampF(sessionStorage.getItem('shugo_gfloors') || F_DEF);
     const setFloors = n => { floors = clampF(n); try { sessionStorage.setItem('shugo_gfloors', floors); } catch (e) {} };
@@ -208,19 +208,20 @@
           if (playing && mode === 'net' && sim) sim.ents.forEach(e => { if (e.kind === 'remote' && !room.players().some(p => p.id === e.id)) sim.kill(e.id); });
           drawSide();
         },
-        onFull: () => { room = null; toast('방이 꽉 찼다거 (최대 5명)', true); drawSide(); },
+        onFull: () => { room = null; chat.close(); toast('방이 꽉 찼다거 (최대 5명)', true); drawSide(); },
         onMsg: m => {
-          if (m.t === 's' && !playing) startGame(m.r, false, m.n, m.seed);
+          if (m.t === 'c') chat.got(m);
+          else if (m.t === 's' && !playing) startGame(m.r, false, m.n, m.seed);
           else if (!sim || mode !== 'net') return;
           else if (m.t === 'p') { const e = sim.ents.find(x => x.id === m.id); if (e && e.kind === 'remote') { e.tx = m.x; e.ty = m.y; e.vx = m.vx; e.vy = m.vy; e.face = m.f; e.ground = !!m.g; } }
           else if (m.t === 't') m.k.forEach(k => sim.trigger(k));
           else if (m.t === 'd') sim.kill(m.id);
         }
       });
-      startDemo(); drawSide();
+      chat.open(room); startDemo(); drawSide();
     }
     function announce() { if (!lobby || !room) return; if (room.isHost()) lobby.announce({ code: room.code, n: room.players().length, host: room.me.name, playing }); else lobby.quiet(); }
-    function leave() { if (room) { room.leave(); room = null; } if (lobby) lobby.quiet(); startDemo(); drawSide(); }
+    function leave() { chat.close(); if (room) { room.leave(); room = null; } if (lobby) lobby.quiet(); startDemo(); drawSide(); }
 
     const floorBox = on => `<label class="field g-floors"><span>발판 줄 수 <b id="flv">${floors}</b>줄</span><input type="range" id="fl" min="${F_MIN}" max="${F_MAX}" step="1" value="${floors}" ${on ? '' : 'disabled'}></label>`;
     function bindFloors(after) { const fl = $('#fl'); if (!fl) return; fl.oninput = () => { $('#flv').textContent = fl.value; }; fl.onchange = () => { setFloors(fl.value); if (after) after(); }; }
@@ -291,7 +292,7 @@
       const want = new URLSearchParams(location.hash.split('?')[1] || '').get('room');
       if (want && !opt.embed) join(want.toUpperCase().slice(0, 4));
     }
-    const stop = () => { if (!alive) return; alive = false; S().bgm.pause(); removeEventListener('keydown', kd); removeEventListener('keyup', ku); removeEventListener('keydown', unlock); removeEventListener('hashchange', off); if (room) room.leave(); if (lobby) lobby.close(); };
+    const stop = () => { if (!alive) return; alive = false; S().bgm.pause(); removeEventListener('keydown', kd); removeEventListener('keyup', ku); removeEventListener('keydown', unlock); removeEventListener('hashchange', off); chat.close(); if (room) room.leave(); if (lobby) lobby.close(); };
     const off = () => { if (!here.test(location.hash)) stop(); };
     addEventListener('hashchange', off);
     return { stop };

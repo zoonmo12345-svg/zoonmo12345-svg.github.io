@@ -170,8 +170,8 @@
         <a class="kpi kpi--red" href="${ok ? '#/msg' : '#/login'}"><b class="num" id="kMsg">-</b><span>안 읽은 쪽지</span></a>
       </div>
       <a class="gbanner c12" href="#/games" data-spot>
-        <div><span class="eyebrow">미니게임 · 가입 없이 바로</span><h2>와르르 슈고</h2><p>밟으면 떨어지는 발판 위에서 끝까지 살아남기. 최대 5명.</p></div>
-        <span class="btn btn--gold btn--lg">게임 하러 가기 ${IC.go}</span></a>
+        <div><h2>심심하냐거~?</h2></div>
+        <span class="btn btn--gold btn--lg"><img class="gbanner__ic" src="assets/img/hc/f0.png" alt="">미니게임 하러 가기 ${IC.go}</span></a>
       <section class="pn c8" id="hero" data-spot><div class="hr"><div><span class="eyebrow">다음 레이드</span><h2 class="mut">불러오는 중</h2></div></div></section>
       <section class="pn c4"><h3 class="pn__h">상회 공지</h3><div class="notice none" id="notice">불러오는 중</div></section>
       <section class="pn c5"><h3 class="pn__h">레이드 일정<a href="#/raid">전체 보기</a></h3><div class="pn__b list" id="sched"></div></section>
