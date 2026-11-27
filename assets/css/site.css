@@ -654,3 +654,4 @@ body.landing main > * { animation: none; }
 .pend .t { font-weight: 800; }
 .pend .m { color: var(--mut); font-size: 13px; }
 .pend__b { display: flex; gap: 6px; flex: none; }
+.adm-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }

@@ -92,6 +92,7 @@
       async decidePending(id, approve) { const { error } = await sb.rpc('pending_decide', { target: id, approve }); err(error); },
       async listMembers() { const { data, error } = await sb.from('profiles').select('id,' + RP).eq('status', 'approved').order('char_name'); err(error); return data; },
       async setStatus(id, status) { const { error } = await sb.rpc('admin_set_status', { target: id, new_status: status }); err(error); },
+      async deleteRejected(id) { const { data, error } = await sb.rpc('admin_delete_rejected', id ? { target: id } : {}); err(error); return data || 0; },
       async setRole(id, role) { const { error } = await sb.rpc('admin_set_role', { target: id, new_role: role }); err(error); },
       async resetPassword(id, pw) { const { error } = await sb.rpc('admin_reset_password', { target: id, new_password: pw }); err(error); },
 
@@ -203,6 +204,7 @@
       async decidePending(id, approve) { const m = approved(); need(['ai', 'manager', 'owner'].includes(m.role), '할 수 없어'); const t = db.users.find(u => u.id === id); need(t && t.status === 'pending', '승인 대기 중인 사람이 아니야'); t.status = approve ? 'approved' : 'rejected'; save(); emit('change'); },
       async listMembers() { approved(); return db.users.filter(u => u.status === 'approved').map(pub); },
       async setStatus(id, status) { guard(id).status = status; save(); emit('change'); },
+      async deleteRejected(id) { admin(); const gone = db.users.filter(u => u.status === 'rejected' && (u.role || 'member') === 'member' && (!id || u.id === id)); db.users = db.users.filter(u => !gone.includes(u)); save(); emit('change'); return gone.length; },
       async setRole(id, role) { const m = owner(), t = db.users.find(u => u.id === id); need(t.id !== m.id && t.role !== 'owner' && ['member', 'manager'].includes(role), '바꿀 수 없는 등급이야'); t.role = role; save(); emit('change'); },
       async resetPassword(id, pw) { guard(id).pw = pw; save(); },
 

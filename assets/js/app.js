@@ -493,10 +493,12 @@
         ${u.status !== 'approved' ? `<button class="btn btn--gold btn--sm" data-st="approved" data-u="${u.id}">승인</button>` : ''}
         ${u.status === 'pending' ? `<button class="btn btn--sm" data-st="rejected" data-u="${u.id}">거절</button>` : ''}
         ${tab === 'members' && u.status === 'approved' && u.id !== me().id ? `<button class="btn btn--sm" data-st="pending" data-u="${u.id}">승인 취소</button>${isOwner() && u.role !== 'owner' && u.role !== 'ai' ? `<button class="btn btn--sm" data-role="${u.role === 'manager' ? 'member' : 'manager'}" data-u="${u.id}">${u.role === 'manager' ? '관리슈고 해제' : '관리슈고 임명'}</button>` : ''}` : ''}
-        ${tab === 'members' ? `<button class="btn btn--plain btn--sm" data-pw="${u.id}" data-name="${esc(nick(u))}">비번 초기화</button>` : ''}</div></td></tr>`;
+        ${tab === 'members' ? `<button class="btn btn--plain btn--sm" data-pw="${u.id}" data-name="${esc(nick(u))}">비번 초기화</button>` : ''}
+        ${tab === 'members' && u.status === 'rejected' && (u.role || 'member') === 'member' ? `<button class="btn btn--sm" data-del="${u.id}" data-name="${esc(nick(u))}">삭제</button>` : ''}</div></td></tr>`;
     const table = rows => `<table class="tbl"><thead><tr><th>본캐 닉네임</th><th>사이트 닉네임</th><th>로그인 계정</th><th>비상연락처</th><th>상태</th><th>가입</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
     if (tab === 'pending') body.innerHTML = pending.length ? table(pending.map(row).join('')) : `<div class="empty"><b>승인 기다리는 사람이 없어</b></div>`;
-    if (tab === 'members') body.innerHTML = `<input class="input" id="q" placeholder="닉네임·아이디 검색" style="max-width:280px;margin-bottom:8px" aria-label="회원 검색">${table(users.map(row).join(''))}`;
+    const rejected = users.filter(u => u.status === 'rejected' && (u.role || 'member') === 'member');
+    if (tab === 'members') body.innerHTML = `<div class="adm-top"><input class="input" id="q" placeholder="닉네임·아이디 검색" style="max-width:280px" aria-label="회원 검색">${rejected.length ? `<button class="btn" id="purge">거절된 사람 ${rejected.length}명 목록에서 삭제</button>` : ''}</div>${table(users.map(row).join(''))}`;
     if (tab === 'posts') { const ps = await S.listPosts({ limit: 200 });
       body.innerHTML = ps.length ? `<table class="tbl"><thead><tr><th>제목</th><th>게시판</th><th>글쓴이</th><th>날짜</th><th></th></tr></thead><tbody>${ps.map(p => `<tr><td><a href="#/post/${p.id}"><b>${esc(p.title)}</b></a></td><td>${esc(boardName(p.cat))}</td><td>${esc(nick(p.author))}</td><td class="mut">${ago(p.created_at)}</td><td><div class="acts"><button class="btn btn--sm" data-dp="${p.id}">지우기</button></div></td></tr>`).join('')}</tbody></table>` : `<div class="empty"><b>글이 없어</b></div>`; }
     if (tab === 'raids') { const rs = await S.listRaids();
@@ -506,6 +508,9 @@
       $('#nf').onsubmit = e => { e.preventDefault(); run(e.submitter, async () => { await S.setNotice(new FormData(e.target).get('t').trim()); toast('공지 저장했어'); }); }; }
     const again = () => admin(tab);
     $$('[data-st]', body).forEach(b => b.onclick = () => run(b, async () => { await S.setStatus(b.dataset.u, b.dataset.st); again(); }));
+    const purge = $('#purge', body);
+    if (purge) purge.onclick = () => { if (confirm(`거절된 사람 ${rejected.length}명을 삭제할까?\n계정째로 지워져서 되돌릴 수 없어.`)) run(purge, async () => { const n = await S.deleteRejected(); toast(`${n}명 삭제했어`); again(); }); };
+    $$('[data-del]', body).forEach(b => b.onclick = () => { if (confirm(`${b.dataset.name} 을(를) 삭제할까?\n계정째로 지워져서 되돌릴 수 없어.`)) run(b, async () => { await S.deleteRejected(b.dataset.del); toast('삭제했어'); again(); }); });
     $$('[data-role]', body).forEach(b => b.onclick = () => { if (confirm(b.textContent.trim() + ' 할까?')) run(b, async () => { await S.setRole(b.dataset.u, b.dataset.role); again(); }); });
     $$('[data-pw]', body).forEach(b => b.onclick = () => {
       const d = sheet(`<h2>비밀번호 재설정</h2><p>${esc(b.dataset.name)} 의 새 비밀번호를 적어줘. 기존 비밀번호는 누구도 볼 수 없고, 새로 정해주는 것만 돼.</p>
