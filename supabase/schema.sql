@@ -70,9 +70,9 @@ $$;
 create or replace function public.guard_target(target uuid) returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  if not is_admin() then raise exception '관리자만 할 수 있어'; end if;
+  if not is_admin() then raise exception '관리자 전용이라거'; end if;
   if not is_owner() and exists (select 1 from profiles where id = target and role = 'owner') then
-    raise exception '상회장 계정은 상회장만 바꿀 수 있어';
+    raise exception '상회장 계정은 상회장만 바꾼다거';
   end if;
 end $$;
 
@@ -88,9 +88,9 @@ end $$;
 create or replace function public.admin_set_role(target uuid, new_role text) returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  if not is_owner() then raise exception '상회장만 할 수 있어'; end if;
-  if new_role not in ('member','manager') then raise exception '없는 등급이야'; end if;
-  if target = auth.uid() then raise exception '자기 등급은 못 바꿔'; end if;
+  if not is_owner() then raise exception '상회장 전용이라거'; end if;
+  if new_role not in ('member','manager') then raise exception '없는 등급이라거'; end if;
+  if target = auth.uid() then raise exception '자기 등급은 못 바꾼다거'; end if;
   update profiles set role = new_role where id = target and role <> 'owner';
 end $$;
 
@@ -266,7 +266,7 @@ create policy "notice read" on public.site_notice for select using (true);
 create or replace function public.admin_set_notice(new_text text) returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  if not is_admin() then raise exception '관리자만 할 수 있다거.'; end if;
+  if not is_admin() then raise exception '관리자 전용이라거'; end if;
   update site_notice set text = left(new_text, 300), updated_at = now() where id = 1;
 end $$;
 
@@ -297,7 +297,7 @@ create or replace function public.admin_list_profiles()
 returns table (id uuid, username text, char_name text, main_char text, job text, avatar_url text, status text, role text, created_at timestamptz, contact text)
 language plpgsql stable security definer set search_path = public as $$
 begin
-  if not is_admin() then raise exception '관리자만 할 수 있어'; end if;
+  if not is_admin() then raise exception '관리자 전용이라거'; end if;
   return query select p.id, p.username, p.char_name, p.main_char, p.job, p.avatar_url, p.status, p.role, p.created_at, coalesce(v.contact, '')
     from profiles p left join profile_private v on v.id = p.id order by p.created_at desc;
 end $$;
@@ -339,9 +339,9 @@ alter table public.profiles add constraint profiles_len_check check (char_length
 create or replace function public.guard_target(target uuid) returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  if not is_admin() then raise exception '관리자만 할 수 있어'; end if;
+  if not is_admin() then raise exception '관리자 전용이라거'; end if;
   if not is_owner() and exists (select 1 from profiles where id = target and role in ('owner','ai')) then
-    raise exception '상회장·보조AI 계정은 상회장만 바꿀 수 있어';
+    raise exception '상회장·보조AI 계정은 상회장만 바꾼다거';
   end if;
 end $$;
 
@@ -349,9 +349,9 @@ end $$;
 create or replace function public.admin_set_role(target uuid, new_role text) returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  if not is_owner() then raise exception '상회장만 할 수 있어'; end if;
-  if new_role not in ('member','manager') then raise exception '없는 등급이야'; end if;
-  if target = auth.uid() then raise exception '자기 등급은 못 바꿔'; end if;
+  if not is_owner() then raise exception '상회장 전용이라거'; end if;
+  if new_role not in ('member','manager') then raise exception '없는 등급이라거'; end if;
+  if target = auth.uid() then raise exception '자기 등급은 못 바꾼다거'; end if;
   update profiles set role = new_role where id = target and role not in ('owner','ai');
 end $$;
 
@@ -362,7 +362,7 @@ returns table (id uuid, char_name text, main_char text, created_at timestamptz)
 language plpgsql stable security definer set search_path = public as $$
 begin
   if not exists (select 1 from profiles where profiles.id = auth.uid() and status = 'approved' and role in ('ai','manager','owner')) then
-    raise exception '볼 수 없어';
+    raise exception '볼 수 없다거';
   end if;
   return query select p.id, p.char_name, p.main_char, p.created_at from profiles p where p.status = 'pending' order by p.created_at desc;
 end $$;
@@ -374,10 +374,10 @@ create or replace function public.pending_decide(target uuid, approve boolean) r
 language plpgsql security definer set search_path = public as $$
 begin
   if not exists (select 1 from profiles where id = auth.uid() and status = 'approved' and role in ('ai','manager','owner')) then
-    raise exception '할 수 없어';
+    raise exception '할 수 없다거';
   end if;
   update profiles set status = case when approve then 'approved' else 'rejected' end where id = target and status = 'pending' and role = 'member';
-  if not found then raise exception '승인 대기 중인 사람이 아니야'; end if;
+  if not found then raise exception '승인 대기 중인 사람이 아니라거'; end if;
 end $$;
 revoke all on function public.pending_decide(uuid, boolean) from public, anon;
 grant execute on function public.pending_decide(uuid, boolean) to authenticated;
@@ -390,7 +390,7 @@ create or replace function public.admin_delete_rejected(target uuid default null
 language plpgsql security definer set search_path = public, auth as $$
 declare n integer;
 begin
-  if not is_admin() then raise exception '관리자만 할 수 있어'; end if;
+  if not is_admin() then raise exception '관리자 전용이라거'; end if;
   delete from auth.users u where u.id in (select p.id from profiles p where p.status = 'rejected' and p.role = 'member' and (target is null or p.id = target));
   get diagnostics n = row_count;
   return n;

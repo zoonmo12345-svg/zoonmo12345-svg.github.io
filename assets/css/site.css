@@ -673,3 +673,10 @@ body.landing main > * { animation: none; }
 .cs--sm { width: 24%; gap: 1px; }
 .cs--sm .cs__h { font-size: 10.5px; }
 .cs--sm .cs__n { font-size: 12.5px; padding: 2px 6px; }
+.ck-ctl { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--ink2); }
+.ck-ctl button { width: 30px; height: 30px; border: 1px solid var(--line2); border-radius: 8px; background: var(--bg); font: 800 16px var(--sans); }
+.ck-ctl button:hover:not([disabled]) { border-color: var(--gold); }
+.ck-ctl button[disabled] { opacity: .35; }
+.ck-ctl b { min-width: 20px; text-align: center; font-size: 16px; color: var(--gold2); }
+.ck-ctl em { font-style: normal; font-weight: 500; font-size: 12px; color: var(--mut); }
+.ck-ctl .ck-ctl__a { width: auto; padding: 0 10px; font-size: 12px; font-weight: 700; }

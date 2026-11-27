@@ -3,7 +3,7 @@ create or replace function public.admin_delete_rejected(target uuid default null
 language plpgsql security definer set search_path = public, auth as $$
 declare n integer;
 begin
-  if not is_admin() then raise exception '관리자만 할 수 있어'; end if;
+  if not is_admin() then raise exception '관리자 전용이라거'; end if;
   delete from auth.users u where u.id in (select p.id from profiles p where p.status = 'rejected' and p.role = 'member' and (target is null or p.id = target));
   get diagnostics n = row_count;
   return n;

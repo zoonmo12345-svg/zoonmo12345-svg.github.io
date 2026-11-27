@@ -1,51 +1,45 @@
 // 비탄의 설원 (4성역, 10인) 자리
-// 2넴 자리표 = 쐐기 패턴(수정 쐐기 기믹). 안쪽 4명(주시: 줄 받아서 보라 수정만 깨기, 근딜·탱) + 바깥 4명(얼음 쐐기 부수기, 원딜. 모자라면 힐러) + 힐러 2명(자기 팟 두 방향 사이).
-// 팟마다 붙어 있는 두 방향을 맡음: 1팟 9시·12시 / 2팟 3시·6시. 2-2 는 전원 한 칸 옆(+1).
-// 조사 근거: 디시 '성역 공대장 공략'(내부 주시 4 + 외부 쐐기 4, 팟별 2방향), 인벤 팁 6444 (2246·2249·2276), NC 공식 공략. 방향을 어느 팟이 맡는지는 우리 공대 기준으로 정한 것.
+// 2넴 자리표 = 쐐기 패턴(수정 쐐기 기믹).
+//   외부(쐐기) 4명은 꼭 필요: 9·12·3·6시. 원딜 먼저, 모자라면 근딜 → 탱, 힐러는 맨 마지막.
+//   내부(주시)는 나머지 딜·탱이 겹치지 않게 고르게 벌려 섬. 인원은 명단에 맞춰 자동이고 − + 로 바꿀 수 있음. 자동일 땐 힐러를 내부에 안 넣고, 직접 늘렸을 때만 남는 자리에 힐러가 들어감.
+//   2페: 내부는 그대로, 쐐기만 +1시간 (9→10 · 12→1 · 3→4 · 6→7시).
+// 조사 근거: 디시 '성역 공대장 공략'(내부 주시 + 외부 쐐기 4), 인벤 팁 6444 (2246·2249·2276), NC 공식 공략. 2페 +1시간·내부 유동은 상회장 지시(2026-11-27).
 (function () {
-  const IN = { jobs: ['근딜', '메인탱', '서브탱'], avoid: ['원딜', '힐러'], pri: 10, cls: 'cs--sm' };
-  const OUT = { jobs: ['원딜', '근딜'], avoid: ['서브탱', '메인탱', '힐러'], pri: 20, cls: 'cs--sm' };
-  const HEAL = { jobs: ['힐러'], pri: 30, cls: 'cs--sm' };
+  const hourText = h => { const v = Math.round(((h % 12) + 12) % 12 * 2) / 2; return (Math.floor(v) || 12) + '시' + (v % 1 ? '반' : ''); };
+  const side = h => { const v = ((h % 12) + 12) % 12; return v >= 7.5 || v < 1.5 ? 1 : 2; };          // 9·12시 쪽 = 1팟, 3·6시 쪽 = 2팟 (같은 팟끼리 붙게)
+  const innerMax = I => Math.max(0, I.n - Math.min(4, I.n));
+  const innerAuto = I => { const non = I.n - I.healers; return Math.max(0, non - Math.min(4, non)); };
+  const innerN = I => I.opt.inner != null ? Math.min(innerMax(I), Math.max(0, I.opt.inner)) : innerAuto(I);
+  const fromNine = h => ((h - 9) % 12 + 12) % 12;
+  const fmt = shift => H => {
+    const IN = H.each.filter(x => x.s.kind === 'in' && x.names.length).sort((a, b) => fromNine(a.s.hour) - fromNine(b.s.hour)).map(x => `${hourText(x.s.hour)} ${x.names[0]}`);
+    const OUT = H.each.filter(x => x.s.kind === 'out' && x.names.length).map(x => `${hourText(x.s.hour + shift)} ${x.names[0]}`);
+    return [IN.length ? '[내부] ' + IN.join(' / ') : '', OUT.length ? '[외부] ' + OUT.join(' / ') : ''].filter(Boolean).join(' ◆ ');
+  };
   RaidLead.define({
-    id: 'bitan', name: '비탄의 설원', short: '비탄', icon: 'snow', thumb: 'assets/img/raid-bitan.webp', desc: '2넴 쐐기 자리 · 신뇌사 1414',
+    id: 'bitan', name: '비탄의 설원', short: '비탄', icon: 'snow', thumb: 'assets/img/raid-bitan.webp', desc: '2넴 쐐기 자리 (1페 · 2페)',
     bosses: [
       { id: 'b1', sub: '1넴', name: '트리톤',
-        text: '★1팟★ 구슬 9시→12시 ◆ ★2팟★ 구슬 3시→6시' },
-      { id: 'b2', sub: '2넴', name: '델트라스', title: '쐐기', copyName: '쐐기 공지', rings: [21, 42],
-        legend: '안쪽 원 = <b>주시(근딜·탱)</b>, 바깥 원 = <b>쐐기(원딜)</b>, 사이 = 힐러. <b>2-2 는 전원 한 칸 옆</b>(12→1 · 3→5 · 6→7 · 9→11시)이라거.',
-        slots: [
-          { key: 'in9', at: 9, r: 21, party: 1, name: '9시 안', ...IN },
-          { key: 'in12', at: 12, r: 21, party: 1, name: '12시 안', ...IN },
-          { key: 'in3', at: 3, r: 21, party: 2, name: '3시 안', ...IN },
-          { key: 'in6', at: 6, r: 21, party: 2, name: '6시 안', ...IN },
-          { key: 'out9', at: 9, r: 43, party: 1, name: '9시 밖', ...OUT },
-          { key: 'out12', at: 12, r: 43, party: 1, name: '12시 밖', ...OUT },
-          { key: 'out3', at: 3, r: 43, party: 2, name: '3시 밖', ...OUT },
-          { key: 'out6', at: 6, r: 43, party: 2, name: '6시 밖', ...OUT },
-          { key: 'h1', at: 10.5, r: 33, party: 1, name: '1팟 힐', ...HEAL },
-          { key: 'h2', at: 4.5, r: 33, party: 2, name: '2팟 힐', ...HEAL }
-        ],
-        // 한 줄 공지: 안쪽 / 바깥 / 힐 순서, 그 안에서 1팟·2팟
-        copy(H) {
-          const f = k => H.at(k)[0];
-          const part = (lab, items) => { const a = items.filter(x => x[1]).map(x => `${x[0]} ${x[1]}`); return a.length ? `${lab} ${a.join('·')}` : ''; };
-          const row = (t, p1, p2) => { const a = [part('1팟', p1), part('2팟', p2)].filter(Boolean); return a.length ? `★${t}★ ${a.join(' / ')}` : ''; };
-          const rows = [
-            row('안쪽(근딜)', [['9시', f('in9')], ['12시', f('in12')]], [['3시', f('in3')], ['6시', f('in6')]]),
-            row('바깥(원딜)', [['9시', f('out9')], ['12시', f('out12')]], [['3시', f('out3')], ['6시', f('out6')]]),
-            row('힐', [['10시반', f('h1')]], [['4시반', f('h2')]])
-          ].filter(Boolean);
-          return rows.length ? rows.join(' ◆ ') + ' ◆ 2-2는 전원 +1칸' : '';
+        text: '[1팟] 구슬 9시→12시 ◆ [2팟] 구슬 3시→6시' },
+      { id: 'b2', sub: '2넴', name: '델트라스', title: '쐐기', copyName: '쐐기 1페', rings: [21, 42],
+        legend: '안쪽 원 = <b>내부(주시)</b>, 바깥 원 = <b>외부(쐐기)</b>. <b>2페는 쐐기만 +1시간</b>(9→10 · 12→1 · 3→4 · 6→7시)이라거.',
+        ctl: { key: 'inner', label: '내부 인원', value: innerN, max: innerMax },
+        slots(I) {
+          const n = innerN(I), a = [];
+          [9, 12, 3, 6].forEach(h => a.push({ key: 'o' + h, kind: 'out', hour: h, at: h, r: 43, name: h + '시 밖', prefParty: side(h), jobs: ['원딜', '근딜', '서브탱', '메인탱'], avoid: ['힐러'], pri: 10, cls: 'cs--sm' }));
+          for (let k = 0; k < n; k++) { const h = 12 * k / n; a.push({ key: 'i' + k, kind: 'in', hour: h, at: h || 12, r: 21, name: hourText(h) + ' 안', prefParty: side(h), ...(I.opt.inner != null ? { avoid: ['힐러'] } : { never: ['힐러'] }), pri: 20, cls: 'cs--sm' }); }
+          const free = I.n - Math.min(4, I.n) - n;
+          if (free > 0) a.push({ key: 'free', label: '자유', note: '힐러 · 자기 팟 쪽에서 힐', count: free, jobs: ['힐러'], pri: 90, nocopy: true });
+          return a;
         },
-        extras: [
-          { name: '신뇌사 1414 공지', text: H => { const mt = H.byRole('메인탱')[0], st = H.byRole('서브탱')[0]; return `★신뇌사 1414★ 11시 1팟 ◆ 5시 2팟 ◆ 1시 메인탱${mt ? ' ' + mt : ''} ◆ 7시 서브탱${st ? ' ' + st : ''}`; } }
-        ],
+        copy: fmt(0),
+        extras: [{ name: '쐐기 2페 (쐐기만 +1시간)', text: fmt(1) }],
         tips: [
           { t: '쐐기', l: [
-            '안쪽 4명: 줄(주시)을 받아서 보라 수정만 깨기. 파란 수정은 피하기',
-            '바깥 4명: 얼음 쐐기 부수기. 장판은 깔고 빠지면서 치기',
-            '힐러: 자기 팟 두 방향 사이. 원딜이 모자라면 바깥 쐐기에 참여',
-            '2-2: 전원 한 칸 옆으로 (12→1 · 3→5 · 6→7 · 9→11시)'
+            '외부 4명(꼭 필요): 얼음 쐐기 부수기. 장판은 깔고 빠지면서 치기',
+            '내부: 줄(주시)을 받아서 보라 수정만 깨기. 파란 수정은 피하기. 겹치지 않게 넓게 서기',
+            '힐러: 웬만하면 내부·외부에서 빠짐. 원딜이 모자랄 때만 외부 쐐기',
+            '2페: 내부는 그대로, 쐐기만 +1시간 (9→10 · 12→1 · 3→4 · 6→7시)'
           ] },
           { t: '신뇌사 1414', l: [
             '1시 1명 · 5시 4명 · 7시 1명 · 11시 4명',

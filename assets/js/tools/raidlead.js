@@ -21,7 +21,7 @@
     let s = null;
     try { s = JSON.parse(localStorage.getItem('seat2_' + id)); } catch (e) {}
     s = s && Array.isArray(s.names) ? s : {};
-    return { names: Array.from({ length: SIZE }, (_, i) => (s.names || [])[i] || ''), jobs: Array.from({ length: SIZE }, (_, i) => ROLES.includes((s.jobs || [])[i]) ? s.jobs[i] : ''), over: s.over || {}, boss: s.boss || 0 };
+    return { names: Array.from({ length: SIZE }, (_, i) => (s.names || [])[i] || ''), jobs: Array.from({ length: SIZE }, (_, i) => ROLES.includes((s.jobs || [])[i]) ? s.jobs[i] : ''), over: s.over || {}, opt: s.opt || {}, boss: s.boss || 0 };
   }
   const save = (id, st) => { try { localStorage.setItem('seat2_' + id, JSON.stringify(st)); } catch (e) {} };
 
@@ -37,35 +37,42 @@
     const partyOf = i => i < HALF ? 1 : 2;
     const nm = i => st.names[i].trim();
 
+    // 넴드에 따라 자리 수가 명단·설정에 맞춰 달라질 수 있음 (slots 가 함수일 때)
+    const info = B => { const idx = st.names.map((_, i) => i).filter(has); return { n: idx.length, healers: idx.filter(i => st.jobs[i] === '힐러').length, opt: st.opt[B.id] || {} }; };
+    const slotsOf = B => typeof B.slots === 'function' ? B.slots(info(B)) : (B.slots || null);
+
     // ── 자리 계산 ──
     function assign(B) {
-      const slots = B.slots || [], res = slots.map(() => []), used = new Set();
+      const slots = slotsOf(B) || [], res = slots.map(() => []), used = new Set();
       const ov = st.over[B.id];
-      if (ov) { slots.forEach((s, si) => { res[si] = (ov[si] || []).filter(i => i != null && has(i)); res[si].forEach(i => used.add(i)); }); return res; }
+      if (ov && ov.length === slots.length) { slots.forEach((s, si) => { res[si] = (ov[si] || []).filter(i => i != null && has(i)); res[si].forEach(i => used.add(i)); }); return res; }
       slots.map((s, si) => si).sort((a, b) => (slots[a].pri ?? 50) - (slots[b].pri ?? 50)).forEach(si => {
         const s = slots[si];
-        const score = i => { const j = st.jobs[i]; let v = 20; if (s.jobs) { const k = s.jobs.indexOf(j); if (k >= 0) v = k; } if (s.avoid && s.avoid.includes(j)) v += 30 + s.avoid.indexOf(j); return v; };
-        res[si] = st.names.map((_, i) => i).filter(i => has(i) && !used.has(i) && (!s.party || partyOf(i) === s.party) && !(s.never && s.never.includes(st.jobs[i])))
+        const score = i => { const j = st.jobs[i]; let v = 20; if (s.jobs) { const k = s.jobs.indexOf(j); if (k >= 0) v = k; } if (s.avoid && s.avoid.includes(j)) v += 30 + s.avoid.indexOf(j); if (s.prefParty && partyOf(i) !== s.prefParty) v += .5; return v; };
+        res[si] = st.names.map((_, i) => i).filter(i => has(i) && !used.has(i) && (!s.party || partyOf(i) === s.party) && !(s.never && s.never.includes(st.jobs[i])) && !(s.only && !s.only.includes(st.jobs[i])))
           .sort((a, b) => score(a) - score(b) || a - b).slice(0, s.count || 1);
         res[si].forEach(i => used.add(i));
       });
       return res;
     }
     const label = s => s.name || (s.to ? `${s.at}→${s.to}` : s.at ? s.at + '시' : s.label);
-    // 공지 한 줄: ★1팟★ 자리 이름 / 자리 이름 ◆ ★2팟★ …
+    // 공지 한 줄: [1팟] 자리 이름 / 자리 이름 ◆ [2팟] …
+    const segOf = (slots, res, p) => { const a = slots.map((s, si) => s.party === p && !s.nocopy && res[si].length ? `${label(s)} ${res[si].map(nm).join('·')}` : '').filter(Boolean); return a.length ? `[${p}팟] ${a.join(' / ')}` : ''; };
     function message(B) {
-      if (!B.slots) return typeof B.text === 'function' ? B.text(helpers(B, [])) : B.text;
+      const slots = slotsOf(B);
+      if (!slots) return typeof B.text === 'function' ? B.text(helpers(B, [])) : B.text;
       const res = assign(B);
       if (B.copy) return B.copy(helpers(B, res));
-      const seg = p => { const a = B.slots.map((s, si) => s.party === p && !s.nocopy && res[si].length ? `${label(s)} ${res[si].map(nm).join('·')}` : '').filter(Boolean); return a.length ? `★${p}팟★ ${a.join(' / ')}` : ''; };
-      const rest = B.slots.map((s, si) => !s.party && !s.nocopy && res[si].length ? `${label(s)} ${res[si].map(nm).join('·')}` : '').filter(Boolean);
-      return [seg(1), seg(2), ...rest].filter(Boolean).join(' ◆ ');
+      const rest = slots.map((s, si) => !s.party && !s.nocopy && res[si].length ? `${label(s)} ${res[si].map(nm).join('·')}` : '').filter(Boolean);
+      return [segOf(slots, res, 1), segOf(slots, res, 2), ...rest].filter(Boolean).join(' ◆ ');
     }
     // data 파일의 copy·extras 가 쓰는 도구
     function helpers(B, res) {
       const byRole = (r, p) => st.names.map((_, i) => i).filter(i => has(i) && st.jobs[i] === r && (!p || partyOf(i) === p)).map(nm);
-      const at = key => { const si = (B.slots || []).findIndex(s => s.key === key); return si < 0 ? [] : res[si].map(nm); };
-      return { names: st.names.map((n, i) => has(i) ? nm(i) : '').filter(Boolean), byRole, at, any: st.names.some((n, i) => has(i)) };
+      const slots = slotsOf(B) || [];
+      const at = key => { const si = slots.findIndex(s => s.key === key); return si < 0 ? [] : res[si].map(nm); };
+      const each = slots.map((s, si) => ({ s, names: (res[si] || []).map(nm) }));
+      return { names: st.names.map((n, i) => has(i) ? nm(i) : '').filter(Boolean), byRole, at, each, any: st.names.some((n, i) => has(i)) };
     }
 
     // ── 화면 ──
@@ -88,7 +95,7 @@
         el.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); const nx = view.querySelector(`[data-n="${Number(el.dataset.n) + 1}"]`); if (nx) nx.focus(); } };
       });
       view.querySelectorAll('[data-j]').forEach(el => el.onchange = () => { st.jobs[el.dataset.j] = el.value; persist(); drawOut(); });
-      view.querySelector('#clear').onclick = () => { if (confirm('이름과 자리를 전부 비우겠냐거?')) { st.names.fill(''); st.jobs.fill(''); st.over = {}; persist(); draw(); } };
+      view.querySelector('#clear').onclick = () => { if (confirm('이름과 자리를 전부 비우겠냐거?')) { st.names.fill(''); st.jobs.fill(''); st.over = {}; st.opt = {}; persist(); draw(); } };
       view.querySelector('#paste').onclick = pasteSheet;
       const fr = view.querySelector('#fromRaid'); if (fr) fr.onclick = () => raidSheet();
       drawOut();
@@ -101,7 +108,7 @@
       let g = '';
       (B.rings || []).forEach(r => { g += `<circle cx="50" cy="50" r="${r}" class="ck-ring"/>`; });
       (B.marks || []).forEach(m => { const [x, y] = pos(m.at, m.r ?? 30); g += `<g class="ck-mark ck-mark--${m.kind || 'dot'}"><circle cx="${x}" cy="${y}" r="${m.size || 4}"/>${m.t ? `<text x="${x}" y="${y + 1.4}">${esc(m.t)}</text>` : ''}</g>`; });
-      (B.slots || []).forEach(s => {
+      (slotsOf(B) || []).forEach(s => {
         if (!s.to || s.to === s.at) return;
         const [x1, y1] = pos(s.at, 30), [x2, y2] = pos(s.to, 30), mx = (x1 + x2) / 2, my = (y1 + y2) / 2, k = s.bow ?? .22;
         const cx = mx + (y2 - y1) * k, cy = my - (x2 - x1) * k;
@@ -113,18 +120,20 @@
 
     function drawOut() {
       const out = view.querySelector('#out'); if (!out) return;
-      const B = R.bosses[st.boss] || R.bosses[0], res = B.slots ? assign(B) : [], msg = message(B);
+      const B = R.bosses[st.boss] || R.bosses[0], slots = slotsOf(B), res = slots ? assign(B) : [], msg = message(B);
       const H = helpers(B, res);
       const extras = (B.extras || []).map(x => ({ name: x.name, text: typeof x.text === 'function' ? x.text(H) : x.text }));
+      if (B.split && slots) [1, 2].forEach(p => extras.push({ name: `${p}팟만 (글자가 잘릴 때)`, text: segOf(slots, res, p) }));
+      const I = info(B), ctl = B.ctl ? { n: B.ctl.value(I), max: B.ctl.max(I), auto: I.opt[B.ctl.key] == null } : null;
       const chip = (si, k, i) => `<button class="cs__n ${i == null ? 'none' : 'p' + partyOf(i)}" data-si="${si}" data-k="${k}">${i == null ? '빈 자리' : esc(nm(i))}</button>`;
       const slotHtml = (s, si) => Array.from({ length: s.count || 1 }, (_, k) => chip(si, k, res[si][k] ?? null)).join('');
       const head = s => s.name || (s.to ? (s.to === s.at ? `${s.at}시 제자리` : `${s.at}시→${s.to}시`) : `${s.at}시`);
-      const clock = B.slots ? B.slots.map((s, si) => { if (!s.at) return ''; const [x, y] = pos(s.at, s.r ?? 39);
+      const clock = slots ? slots.map((s, si) => { if (!s.at) return ''; const [x, y] = pos(s.at, s.r ?? 39);
         return `<div class="cs ${s.cls || ''}" style="left:${x}%;top:${y}%"><span class="cs__h">${esc(head(s))}${s.note ? ' · ' + esc(s.note) : ''}</span>${slotHtml(s, si)}</div>`; }).join('') : '';
-      const rows = B.slots ? B.slots.map((s, si) => s.at ? '' : `<div><span>${esc(s.label)}${s.note ? ` <span class="mut">${esc(s.note)}</span>` : ''}</span><span class="cs">${slotHtml(s, si)}</span></div>`).join('') : '';
+      const rows = slots ? slots.map((s, si) => s.at ? '' : `<div><span>${esc(s.label)}${s.note ? ` <span class="mut">${esc(s.note)}</span>` : ''}</span><span class="cs">${slotHtml(s, si)}</span></div>`).join('') : '';
       const copyBox = (id, name, text) => `<div class="copy"><span class="copy__t">${esc(name)}</span><pre>${text ? esc(text) : '<span class="mut">이름을 넣으면 공지가 만들어진다거</span>'}</pre><button data-cp="${id}" ${text ? '' : 'disabled'}>복사</button></div>`;
       out.innerHTML = `<div class="seg" role="tablist">${R.bosses.map((b, i) => `<button role="tab" data-b="${i}" class="${i === st.boss ? 'on' : ''}">${esc(b.sub)} ${esc(b.name)}</button>`).join('')}</div>
-        <div class="pn" style="padding:14px">${B.slots ? `<div class="clock">${underlay(B)}<div class="clock__c">${esc(B.title)}<small>이름 누르기 = 교체</small></div>${clock}</div>${B.legend ? `<p class="clock__lg">${B.legend}</p>` : ''}${rows ? `<div class="rowslots">${rows}</div>` : ''}` : '<p class="mut">이 넴드는 개인 자리가 없다거. 아래 공지만 복사하면 된다거.</p>'}</div>
+        <div class="pn" style="padding:14px">${slots ? `<div class="clock">${underlay(B)}<div class="clock__c">${esc(B.title)}<small>이름 누르기 = 교체</small></div>${clock}</div>${ctl ? `<div class="ck-ctl"><span>${esc(B.ctl.label)}</span><button data-ctl="-1" ${ctl.n <= 0 ? 'disabled' : ''} aria-label="줄이기">−</button><b>${ctl.n}</b><button data-ctl="1" ${ctl.n >= ctl.max ? 'disabled' : ''} aria-label="늘리기">+</button>${ctl.auto ? '<em>자동</em>' : '<button data-ctl="0" class="ck-ctl__a">자동으로</button>'}</div>` : ''}${B.legend ? `<p class="clock__lg">${B.legend}</p>` : ''}${rows ? `<div class="rowslots">${rows}</div>` : ''}` : '<p class="mut">이 넴드는 개인 자리가 없다거. 아래 공지만 복사하면 된다거.</p>'}</div>
         <div>${copyBox('main', B.copyName || B.sub + ' 공지', msg)}${extras.map((x, i) => copyBox('x' + i, x.name, x.text)).join('')}
         ${st.over[B.id] ? '<button class="btn btn--plain btn--sm" id="auto" style="margin-top:8px">자동 배정으로 되돌리기</button>' : ''}
         ${B.tips ? `<div class="tips">${B.tips.map(t => `<details open><summary>${esc(t.t)}</summary><ul>${t.l.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>`).join('')}</div>` : ''}</div>`;
@@ -132,6 +141,11 @@
       out.querySelectorAll('[data-cp]').forEach(b => b.onclick = async () => {
         const text = b.dataset.cp === 'main' ? msg : extras[Number(b.dataset.cp.slice(1))].text;
         try { await navigator.clipboard.writeText(text); toast('복사했다거. 게임 채팅에 붙여넣으라거~'); } catch (e) { toast('복사가 막혔다거. 글자를 직접 긁어서 복사하라거', true); }
+      });
+      out.querySelectorAll('[data-ctl]').forEach(b => b.onclick = () => {
+        const d = Number(b.dataset.ctl), o = st.opt[B.id] || (st.opt[B.id] = {});
+        if (d === 0) delete o[B.ctl.key]; else o[B.ctl.key] = Math.min(ctl.max, Math.max(0, ctl.n + d));
+        delete st.over[B.id]; persist(); drawOut();
       });
       const au = out.querySelector('#auto'); if (au) au.onclick = () => { delete st.over[B.id]; persist(); drawOut(); };
       out.querySelectorAll('.cs__n').forEach(b => b.onclick = () => {
@@ -142,7 +156,7 @@
         sel.onblur = () => drawOut();
         sel.onchange = () => {
           const next = sel.value === '' ? null : Number(sel.value);
-          const ov = B.slots.map((s, x) => Array.from({ length: s.count || 1 }, (_, y) => res[x][y] ?? null));     // 지금 배치를 그대로 고정한 뒤
+          const ov = slots.map((s, x) => Array.from({ length: s.count || 1 }, (_, y) => res[x][y] ?? null));     // 지금 배치를 그대로 고정한 뒤
           if (next != null) ov.forEach(a => a.forEach((v, y) => { if (v === next) a[y] = cur; }));                   // 고른 사람이 다른 자리에 있으면 서로 바꿈
           ov[si][k] = next; st.over[B.id] = ov; persist(); drawOut();
         };
