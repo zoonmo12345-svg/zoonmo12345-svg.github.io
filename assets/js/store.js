@@ -63,12 +63,12 @@
       async signUp({ username, password, mainChar, nick, contact }) {
         const { error } = await sb.auth.signUp({ email: idToEmail(username), password,
           options: { data: { username: username.trim(), char_name: nick.trim(), main_char: mainChar.trim(), contact: (contact || '').trim() } } });
-        if (error && /registered|exists/i.test(error.message)) throw new Error('이미 있는 계정이야');
+        if (error && /registered|exists/i.test(error.message)) throw new Error('이미 있는 계정이라거');
         err(error); await loadMe(); emit('change');
       },
       async signIn({ username, password }) {
         const { error } = await sb.auth.signInWithPassword({ email: idToEmail(username), password });
-        if (error) throw new Error('계정이나 비밀번호가 틀렸어');
+        if (error) throw new Error('계정이나 비밀번호가 틀렸다거');
         await loadMe(); emit('change');
       },
       async signOut() { await sb.auth.signOut(); me = null; realtime(); emit('change'); },
@@ -163,16 +163,16 @@
         users: [{ id: 'u1', username: 'admin', pw: 'admin', char_name: '상회장', main_char: '상회장', contact: '', job: '수호성', status: 'approved', role: 'owner', created_at: new Date().toISOString() }] };
     };
     let db = load();
-    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { throw new Error('브라우저 저장공간이 꽉 찼어. 사진을 줄여서 다시 해봐'); } };
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { throw new Error('브라우저 저장공간이 꽉 찼다거. 사진을 줄여서 다시 해보라거'); } };
     const nid = () => String(++db.seq);
     const pub = u => u && ({ id: u.id, username: u.username, char_name: u.char_name, main_char: u.main_char || '', job: u.job || '', avatar_url: u.avatar_url || null, status: u.status, role: u.role, created_at: u.created_at });
     const who = id => { const u = db.users.find(x => x.id === id); return u ? pub(u) : { username: '?', char_name: '(탈퇴)' }; };
     const meRaw = () => db.users.find(u => u.id === db.session);
     const need = (c, m) => { if (!c) throw new Error(m); };
-    const approved = () => { const m = meRaw(); need(m && m.status === 'approved', '승인된 상회원만 할 수 있어'); return m; };
-    const admin = () => { const m = approved(); need(m.role === 'owner' || m.role === 'manager', '관리자만 할 수 있어'); return m; };
-    const owner = () => { const m = approved(); need(m.role === 'owner', '상회장만 할 수 있어'); return m; };
-    const guard = id => { const m = admin(), t = db.users.find(u => u.id === id); need(m.role === 'owner' || t.role !== 'owner', '상회장 계정은 상회장만 바꿀 수 있어'); return t; };
+    const approved = () => { const m = meRaw(); need(m && m.status === 'approved', '승인된 상회원 전용'); return m; };
+    const admin = () => { const m = approved(); need(m.role === 'owner' || m.role === 'manager', '관리자 전용'); return m; };
+    const owner = () => { const m = approved(); need(m.role === 'owner', '상회장 전용'); return m; };
+    const guard = id => { const m = admin(), t = db.users.find(u => u.id === id); need(m.role === 'owner' || t.role !== 'owner', '상회장 계정은 상회장만 변경 가능'); return t; };
     const toDataUrl = blob => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
 
     return {
@@ -182,13 +182,13 @@
       online: () => { const m = meRaw(); return m && m.status === 'approved' ? [pub(m)] : []; },
 
       async signUp({ username, password, mainChar, nick, contact }) {
-        need(!db.users.some(u => u.username.toLowerCase() === username.trim().toLowerCase()), '이미 있는 계정이야');
+        need(!db.users.some(u => u.username.toLowerCase() === username.trim().toLowerCase()), '이미 있는 계정이라거');
         const u = { id: 'u' + nid(), username: username.trim(), pw: password, char_name: nick.trim(), main_char: mainChar.trim(), contact: (contact || '').trim(), job: '', status: 'pending', role: 'member', created_at: new Date().toISOString() };
         db.users.push(u); db.session = u.id; save(); emit('change');
       },
       async signIn({ username, password }) {
         const u = db.users.find(x => x.username.toLowerCase() === username.trim().toLowerCase() && x.pw === password);
-        need(u, '계정이나 비밀번호가 틀렸어'); db.session = u.id; save(); emit('change'); emit('online');
+        need(u, '계정이나 비밀번호가 틀렸다거'); db.session = u.id; save(); emit('change'); emit('online');
       },
       async signOut() { db.session = null; save(); emit('change'); emit('online'); },
       async myContact() { return meRaw()?.contact || ''; },
@@ -200,12 +200,12 @@
       async changePassword(pw) { meRaw().pw = pw; save(); },
 
       async listProfiles() { admin(); return db.users.map(u => ({ ...pub(u), contact: u.contact || '' })).reverse(); },
-      async listPending() { const m = approved(); need(['ai', 'manager', 'owner'].includes(m.role), '볼 수 없어'); return db.users.filter(u => u.status === 'pending').map(u => ({ id: u.id, char_name: u.char_name, main_char: u.main_char, created_at: u.created_at })).reverse(); },
-      async decidePending(id, approve) { const m = approved(); need(['ai', 'manager', 'owner'].includes(m.role), '할 수 없어'); const t = db.users.find(u => u.id === id); need(t && t.status === 'pending', '승인 대기 중인 사람이 아니야'); t.status = approve ? 'approved' : 'rejected'; save(); emit('change'); },
+      async listPending() { const m = approved(); need(['ai', 'manager', 'owner'].includes(m.role), '볼 수 없다거'); return db.users.filter(u => u.status === 'pending').map(u => ({ id: u.id, char_name: u.char_name, main_char: u.main_char, created_at: u.created_at })).reverse(); },
+      async decidePending(id, approve) { const m = approved(); need(['ai', 'manager', 'owner'].includes(m.role), '할 수 없다거'); const t = db.users.find(u => u.id === id); need(t && t.status === 'pending', '승인 대기 중인 사람이 아니라거'); t.status = approve ? 'approved' : 'rejected'; save(); emit('change'); },
       async listMembers() { approved(); return db.users.filter(u => u.status === 'approved').map(pub); },
       async setStatus(id, status) { guard(id).status = status; save(); emit('change'); },
       async deleteRejected(id) { admin(); const gone = db.users.filter(u => u.status === 'rejected' && (u.role || 'member') === 'member' && (!id || u.id === id)); db.users = db.users.filter(u => !gone.includes(u)); save(); emit('change'); return gone.length; },
-      async setRole(id, role) { const m = owner(), t = db.users.find(u => u.id === id); need(t.id !== m.id && t.role !== 'owner' && ['member', 'manager'].includes(role), '바꿀 수 없는 등급이야'); t.role = role; save(); emit('change'); },
+      async setRole(id, role) { const m = owner(), t = db.users.find(u => u.id === id); need(t.id !== m.id && t.role !== 'owner' && ['member', 'manager'].includes(role), '바꿀 수 없는 등급이라거'); t.role = role; save(); emit('change'); },
       async resetPassword(id, pw) { guard(id).pw = pw; save(); },
 
       async listPosts({ cat, limit = 30 } = {}) {
@@ -218,11 +218,11 @@
         const p = { id: nid(), author_id: m.id, cat, title, body, images, created_at: new Date().toISOString() };
         db.posts.push(p); save(); return p.id;
       },
-      async deletePost(id) { const m = approved(), p = db.posts.find(x => x.id === id); need(p.author_id === m.id || m.role !== 'member', '내 글만 지울 수 있어');
+      async deletePost(id) { const m = approved(), p = db.posts.find(x => x.id === id); need(p.author_id === m.id || m.role !== 'member', '내 글만 삭제 가능');
         db.posts = db.posts.filter(x => x.id !== id); db.comments = db.comments.filter(c => c.post_id !== id); save(); },
       async listComments(postId) { return db.comments.filter(c => c.post_id === postId).map(c => ({ ...c, author: who(c.author_id) })); },
       async addComment(postId, body) { const m = approved(); db.comments.push({ id: nid(), post_id: postId, author_id: m.id, body, created_at: new Date().toISOString() }); save(); },
-      async deleteComment(id) { const m = approved(), c = db.comments.find(x => x.id === id); need(c.author_id === m.id || m.role !== 'member', '내 댓글만 지울 수 있어'); db.comments = db.comments.filter(x => x.id !== id); save(); },
+      async deleteComment(id) { const m = approved(), c = db.comments.find(x => x.id === id); need(c.author_id === m.id || m.role !== 'member', '내 댓글만 삭제 가능'); db.comments = db.comments.filter(x => x.id !== id); save(); },
 
       async getNotice() { return db.notice || ''; },
       async setNotice(text) { admin(); db.notice = text; save(); },
@@ -233,7 +233,7 @@
           .map(r => ({ ...r, author: who(r.author_id), members: db.raid_members.filter(x => x.raid_id === r.id).map(x => ({ user_id: x.user_id, role: x.role, profile: who(x.user_id) })) }));
       },
       async createRaid(r) { const m = approved(), id = nid(); db.raids.push({ ...r, id, author_id: m.id, created_at: new Date().toISOString() }); save(); return id; },
-      async deleteRaid(id) { const m = approved(), r = db.raids.find(x => x.id === id); need(r.author_id === m.id || m.role !== 'member', '모집한 사람만 지울 수 있어');
+      async deleteRaid(id) { const m = approved(), r = db.raids.find(x => x.id === id); need(r.author_id === m.id || m.role !== 'member', '모집한 사람만 삭제 가능');
         db.raids = db.raids.filter(x => x.id !== id); db.raid_members = db.raid_members.filter(x => x.raid_id !== id); save(); },
       async joinRaid(id, role) { const m = approved(), ex = db.raid_members.find(x => x.raid_id === id && x.user_id === m.id); if (ex) ex.role = role; else db.raid_members.push({ raid_id: id, user_id: m.id, role }); save(); },
       async leaveRaid(id) { const m = approved(); db.raid_members = db.raid_members.filter(x => !(x.raid_id === id && x.user_id === m.id)); save(); },

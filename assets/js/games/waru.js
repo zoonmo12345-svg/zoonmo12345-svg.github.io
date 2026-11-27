@@ -141,14 +141,14 @@
     const esc = ctx.esc, toast = ctx.toast || (() => {});
     const here = opt.embed ? /^#?\/?$/ : /^#\/game\/waru/;
     view.innerHTML = `<div class="${opt.embed ? 'game game--embed' : 'page game'}">
-      ${opt.embed ? '' : '<div class="ph"><div><h1>와르르 슈고</h1><p>밟은 발판은 곧 떨어져. 계속 뛰어다니면서 마지막까지 살아남아.</p></div><div class="ph__act"><a class="btn" href="#/games">게임 목록</a></div></div>'}
+      ${opt.embed ? '' : '<div class="ph"><div><h1>와르르 슈고</h1><p>밟은 발판은 곧 떨어진다거. 계속 뛰어다니면서 마지막까지 살아남으라거~</p></div><div class="ph__act"><a class="btn" href="#/games">게임 목록</a></div></div>'}
       <div class="g-wrap">
         <div><div class="g-stage" id="stage"><canvas id="gc" width="${VW}" height="${VH}"></canvas><div class="g-tags" id="tags"></div><div class="g-hud" id="hud" hidden></div><div class="g-over" id="over" hidden></div></div>
           <div class="g-pad" id="pad"><button data-k="l" aria-label="왼쪽">◀</button><button data-k="r" aria-label="오른쪽">▶</button><button data-k="j" class="g-jump">점프</button></div>
           <div class="g-bar"><label class="g-vol"><span>소리</span><input type="range" id="vol" min="0" max="100" step="1" aria-label="전체 소리 크기"><b id="volv"></b></label></div>
           <div class="g-how"><b>조작법</b>
             <ul><li><kbd>←</kbd><kbd>→</kbd> 또는 <kbd>A</kbd><kbd>D</kbd> 이동</li><li><kbd>스페이스</kbd> 또는 <kbd>↑</kbd> 점프</li><li>폰은 화면 아래 <kbd>◀</kbd><kbd>▶</kbd><kbd>점프</kbd> 버튼</li></ul>
-            <p>밟은 발판은 0.5초 뒤에 떨어져. 계속 움직이면서 아래로 내려가. 용암에 빠지면 탈락, 마지막까지 남으면 승리! 빨간 화살표가 나야.</p></div></div>
+            <p>밟은 발판은 0.5초 뒤에 떨어진다거. 계속 움직이면서 아래로 내려가라거. 용암에 빠지면 탈락, 마지막까지 남으면 승리! 빨간 화살표가 나라거.</p></div></div>
         <aside class="pn g-side" id="side"></aside>
       </div></div>`;
     const $ = s => view.querySelector(s), cv = $('#gc'), g = cv.getContext('2d'), side = $('#side'), over = $('#over'), tags = $('#tags'), hud = $('#hud');
@@ -208,7 +208,7 @@
           if (playing && mode === 'net' && sim) sim.ents.forEach(e => { if (e.kind === 'remote' && !room.players().some(p => p.id === e.id)) sim.kill(e.id); });
           drawSide();
         },
-        onFull: () => { room = null; toast('방이 꽉 찼어 (최대 5명)', true); drawSide(); },
+        onFull: () => { room = null; toast('방이 꽉 찼다거 (최대 5명)', true); drawSide(); },
         onMsg: m => {
           if (m.t === 's' && !playing) startGame(m.r, false, m.n, m.seed);
           else if (!sim || mode !== 'net') return;
@@ -228,10 +228,10 @@
     function drawSide() {
       me = Games.me();
       const nameBox = me.member ? `<div class="g-name"><span class="label">내 이름</span><b class="vip">${esc(me.name)}</b></div>`
-        : `<label class="field"><span>내 이름 (이 게임에서만 써)</span><input class="input" id="gname" maxlength="10" placeholder="${esc(me.def)}" value="${esc(me.name === me.def ? '' : me.name)}" ${room ? 'disabled' : ''}></label>`;
+        : `<label class="field"><span>내 이름 (이 게임 전용)</span><input class="input" id="gname" maxlength="10" placeholder="${esc(me.def)}" value="${esc(me.name === me.def ? '' : me.name)}" ${room ? 'disabled' : ''}></label>`;
       if (!room) {
         side.innerHTML = `<h3 class="pn__h">대기 중인 방<span>${rooms.length}개</span></h3><div class="pn__b g-menu">${nameBox}
-          <div class="g-rooms">${rooms.length ? rooms.map(r => { const full = r.n >= MAX; return `<button class="g-room" data-code="${esc(r.code)}" ${full || r.playing ? 'disabled' : ''}><span class="g-room__t"><b>${esc(r.host)}의 방</b><small>${r.playing ? '게임 중' : full ? '꽉 참' : '기다리는 중'} · ${r.n}/${MAX}명</small></span><em>${r.playing || full ? '못 들어가' : '들어가기'}</em></button>`; }).join('') : '<p class="g-rooms__no">지금 대기 중인 방이 없어.<br>방을 만들면 여기에 떠서 누구나 눌러서 들어와.</p>'}</div>
+          <div class="g-rooms">${rooms.length ? rooms.map(r => { const full = r.n >= MAX; return `<button class="g-room" data-code="${esc(r.code)}" ${full || r.playing ? 'disabled' : ''}><span class="g-room__t"><b>${esc(r.host)}의 방</b><small>${r.playing ? '게임 중' : full ? '꽉 참' : '기다리는 중'} · ${r.n}/${MAX}명</small></span><em>${r.playing || full ? '못 들어가' : '들어가기'}</em></button>`; }).join('') : '<p class="g-rooms__no">지금 대기 중인 방이 없다거.<br>방을 만들면 여기에 떠서 누구나 눌러서 들어온다거.</p>'}</div>
           <button class="btn btn--gold btn--lg" id="mk" ${Games.online() ? '' : 'disabled'}>방 만들기</button>
           ${floorBox(true)}
           <button class="btn btn--lg" id="so">혼자 연습 (봇 3마리)</button></div>`;
@@ -246,11 +246,11 @@
       const hostFloors = clampF(host ? floors : (ps[0] && ps[0].floors) || F_DEF);
       side.innerHTML = `<h3 class="pn__h">방 ${esc(room.code)}<span>${ps.length}/${MAX}</span></h3><div class="pn__b g-menu">
         <div class="g-players">${Array.from({ length: MAX }, (_, i) => { const p = ps[i]; return p ? `<div class="g-p"><img src="${face(i)}" alt=""><span class="${p.member ? 'vip' : ''}">${esc(p.name)}</span><em>${i === 0 ? '방장' : p.ready ? '준비 완료' : '준비 중'}</em></div>` : `<div class="g-p g-p--empty"><span>빈 자리</span></div>`; }).join('')}</div>
-        ${host && !playing ? floorBox(true) : `<div class="g-name"><span class="label">발판 줄 수 (방장이 정해)</span><b>${hostFloors}줄</b></div>`}
-        ${playing ? '<p class="mut">게임 중이야.</p>' : host
+        ${host && !playing ? floorBox(true) : `<div class="g-name"><span class="label">발판 줄 수 (방장이 정함)</span><b>${hostFloors}줄</b></div>`}
+        ${playing ? '<p class="mut">게임 중</p>' : host
           ? `<button class="btn btn--gold btn--lg" id="st" ${allReady ? '' : 'disabled'}>${ps.length === 1 ? '봇이랑 시작' : allReady ? '시작' : '다들 준비하면 시작'}</button>`
           : `<button class="btn ${mine && mine.ready ? '' : 'btn--gold'} btn--lg" id="rd">${mine && mine.ready ? '준비 취소' : '준비'}</button>`}
-        <p class="g-note">이 방은 '대기 중인 방'에 떠 있어. 다른 사람은 게임 화면에서 방을 누르면 바로 들어와.</p><button class="btn btn--plain" id="lv">방 나가기</button></div>`;
+        <p class="g-note">이 방은 '대기 중인 방'에 떠 있다거. 다른 사람은 게임 화면에서 방을 누르면 바로 들어온다거.</p><button class="btn btn--plain" id="lv">방 나가기</button></div>`;
       bindFloors(() => room && room.update({ floors }));
       const st = $('#st'); if (st) st.onclick = () => {
         if (ps.length === 1) { solo(); return; }

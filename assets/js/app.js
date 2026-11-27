@@ -45,7 +45,7 @@
   }
   async function run(btn, fn) {
     if (btn) btn.disabled = true;
-    try { return await fn(); } catch (e) { toast(e.message || '실패했어', true); } finally { if (btn) btn.disabled = false; }
+    try { return await fn(); } catch (e) { toast(e.message || '실패했다거', true); } finally { if (btn) btn.disabled = false; }
   }
   const sheetEl = document.getElementById('sheet');
   function sheet(html) { sheetEl.innerHTML = html; sheetEl.showModal(); $$('[data-close]', sheetEl).forEach(b => b.onclick = () => sheetEl.close()); return sheetEl; }
@@ -74,7 +74,7 @@
   let pendingCount = 0;
   function navItems() {
     const a = [{ href: '#/home', key: 'home', name: '홈', tip: '홈', icon: IC.home }, { sep: 1 }];
-    Tools.list.forEach(t => a.push({ href: '#/tool/' + t.id, key: 'tool/' + t.id, name: t.name, tip: t.full || t.name, icon: IC[t.icon] || IC.tools, find: t.full }));
+    a.push({ href: '#/tools', key: 'tools', name: '공대장 도구', tip: '공대장 도구', icon: IC.tools });
     a.push({ sep: 1 }, { href: '#/raid', key: 'raid', name: '레이드 모집', tip: '레이드 모집', icon: IC.raid }, { href: '#/board', key: 'board', name: '게시판', tip: '게시판', icon: IC.board });
     a.push({ href: '#/games', key: 'games', name: '미니게임', tip: '미니게임', icon: IC.game });
     if (C.showDownloads) a.push({ href: '#/downloads', key: 'downloads', name: '다운로드', tip: '다운로드', icon: IC.down });
@@ -112,6 +112,7 @@
   let palSel = 0;
   function palItems() {
     const a = navItems().filter(x => !x.sep).map(x => ({ href: x.href, name: x.find || x.name, icon: x.icon }));
+    Tools.list.forEach(t => a.push({ href: '#/tool/' + t.id, name: t.full || t.name, icon: IC[t.icon] || IC.tools }));
     if (C.boards.length > 1) C.boards.forEach(b => a.push({ href: '#/board/' + b.id, name: '게시판 › ' + b.name, icon: IC.board }));
     a.push({ href: '#/me', name: '내 정보', icon: IC.user }, { href: '#/intro', name: '소개 페이지', icon: IC.go });
     return a;
@@ -120,7 +121,7 @@
     const q = palIn.value.trim().toLowerCase();
     const items = palItems().filter(it => !q || it.name.toLowerCase().includes(q));
     palSel = Math.min(palSel, Math.max(0, items.length - 1));
-    palList.innerHTML = items.map((it, i) => `<a href="${it.href}" class="${i === palSel ? 'sel' : ''}" role="option">${it.icon}${esc(it.name)}</a>`).join('') || '<div class="empty">없는 메뉴야</div>';
+    palList.innerHTML = items.map((it, i) => `<a href="${it.href}" class="${i === palSel ? 'sel' : ''}" role="option">${it.icon}${esc(it.name)}</a>`).join('') || '<div class="empty">없는 메뉴라거</div>';
     $$('a', palList).forEach(a => a.onclick = () => pal.close());
   }
   function openPal() { palIn.value = ''; palSel = 0; palRender(); pal.showModal(); palIn.focus(); }
@@ -145,9 +146,9 @@
   // ───── 공용 조각 ─────
   function gate(kind) {
     const m = {
-      login: ['상회원만 쓸 수 있어', '로그인하고 상회장 승인을 받으면 열려.', `<a class="btn btn--gold" href="#/login">로그인</a><a class="btn" href="#/signup">가입하기</a>`],
-      pending: ['승인 기다리는 중', '상회장이 승인하면 바로 열려. 디스코드에 닉네임 남기면 더 빨라.', `<a class="btn" href="${esc(C.discord)}" target="_blank" rel="noopener">디스코드 열기</a>`],
-      rejected: ['승인이 안 됐어', '상회장에게 디스코드로 물어봐.', `<a class="btn" href="${esc(C.discord)}" target="_blank" rel="noopener">디스코드 열기</a>`]
+      login: ['상회원 전용', '로그인하고 상회장 승인을 받으면 열려.', `<a class="btn btn--gold" href="#/login">로그인</a><a class="btn" href="#/signup">가입하기</a>`],
+      pending: ['승인 기다리는 중', '상회장이 승인하면 바로 열린다거. 디스코드에 닉네임을 남기면 더 빠르다거~', `<a class="btn" href="${esc(C.discord)}" target="_blank" rel="noopener">디스코드 열기</a>`],
+      rejected: ['승인이 안 됐다거', '상회장에게 디스코드로 물어보라거.', `<a class="btn" href="${esc(C.discord)}" target="_blank" rel="noopener">디스코드 열기</a>`]
     }[kind];
     return `<div class="gate"><h2>${m[0]}</h2><p>${m[1]}</p><div class="acts">${m[2]}</div></div>`;
   }
@@ -169,7 +170,7 @@
         <a class="kpi kpi--red" href="${ok ? '#/msg' : '#/login'}"><b class="num" id="kMsg">-</b><span>안 읽은 쪽지</span></a>
       </div>
       <a class="gbanner c12" href="#/games" data-spot>
-        <div><span class="eyebrow">미니게임 · 가입 없이 바로</span><h2>와르르 슈고</h2><p>밟으면 떨어지는 발판 위에서 끝까지 살아남기. 최대 5명이 같이 해.</p></div>
+        <div><span class="eyebrow">미니게임 · 가입 없이 바로</span><h2>와르르 슈고</h2><p>밟으면 떨어지는 발판 위에서 끝까지 살아남기. 최대 5명.</p></div>
         <span class="btn btn--gold btn--lg">게임 하러 가기 ${IC.go}</span></a>
       <section class="pn c8" id="hero" data-spot><div class="hr"><div><span class="eyebrow">다음 레이드</span><h2 class="mut">불러오는 중</h2></div></div></section>
       <section class="pn c4"><h3 class="pn__h">상회 공지</h3><div class="notice none" id="notice">불러오는 중</div></section>
@@ -181,27 +182,27 @@
       </div></section>
     </div></div>`;
 
-    S.getNotice().then(t => { const el = $('#notice'); if (!el) return; el.textContent = t || '지금은 공지가 없어'; el.classList.toggle('none', !t); }).catch(() => {});
+    S.getNotice().then(t => { const el = $('#notice'); if (!el) return; el.textContent = t || '공지 없음'; el.classList.toggle('none', !t); }).catch(() => {});
     S.listPosts({ limit: 40 }).then(ps => {
       setK('kPost', ps.filter(p => dayKey(p.created_at) === dayKey(Date.now())).length);
-      $('#latest').innerHTML = ps.length ? ps.slice(0, 7).map(p => `<a href="#/post/${p.id}">${C.boards.length > 1 ? `<span class="tag">${esc(boardName(p.cat))}</span>` : ''}<span class="t">${esc(p.title)}${p.comment_count ? ` <em style="font-style:normal;color:var(--gold);font-size:12px">[${p.comment_count}]</em>` : ''}</span><span class="m num">${shortDate(p.created_at)}</span></a>`).join('') : `<div class="mut">아직 글이 없어</div>`;
+      $('#latest').innerHTML = ps.length ? ps.slice(0, 7).map(p => `<a href="#/post/${p.id}">${C.boards.length > 1 ? `<span class="tag">${esc(boardName(p.cat))}</span>` : ''}<span class="t">${esc(p.title)}${p.comment_count ? ` <em style="font-style:normal;color:var(--gold);font-size:12px">[${p.comment_count}]</em>` : ''}</span><span class="m num">${shortDate(p.created_at)}</span></a>`).join('') : `<div class="mut">아직 글이 없다거</div>`;
     }).catch(() => {});
     setK('kMsg', unread);
     const hero = $('#hero'), sched = $('#sched');
     if (!ok) {
       setK('kRaid', 0);
-      hero.innerHTML = `<div class="hr"><div><span class="eyebrow">다음 레이드</span><h2>${u ? '승인을 기다리는 중이야' : '상회원이 되면 일정이 보여'}</h2>
-        <p class="hr__meta">${u ? '상회장이 승인하면 모집·참여·알림이 열려.' : '가입하고 상회장 승인을 받으면 모집에 참여하고 폰 알림도 받을 수 있어.'}</p>
+      hero.innerHTML = `<div class="hr"><div><span class="eyebrow">다음 레이드</span><h2>${u ? '승인 대기 중이라거' : '상회원이 되면 일정이 보인다거'}</h2>
+        <p class="hr__meta">${u ? '상회장이 승인하면 모집·참여·알림이 열려.' : '가입하고 상회장 승인을 받으면 모집에 참여하고 폰 알림도 받는다거.'}</p>
         <div class="hr__act">${u ? `<a class="btn btn--lg" href="#/me">내 정보</a>` : `<a class="btn btn--gold btn--lg" href="#/signup">가입하기</a><a class="btn btn--lg" href="#/login">로그인</a>`}</div></div></div>`;
-      sched.innerHTML = `<div class="mut">상회원만 볼 수 있어</div>`;
+      sched.innerHTML = `<div class="mut">상회원 전용</div>`;
       return;
     }
     S.listRaids().then(rs => {
       rs = rs.filter(r => new Date(r.starts_at) > Date.now() - 3600e3);
       setK('kRaid', rs.length);
       if (!rs.length) {
-        hero.innerHTML = `<div class="hr"><div><span class="eyebrow">다음 레이드</span><h2>잡힌 레이드가 없어</h2><p class="hr__meta">먼저 모집을 올려서 사람을 모아봐.</p><div class="hr__act"><a class="btn btn--gold btn--lg" href="#/raid">모집 올리기</a></div></div></div>`;
-        sched.innerHTML = `<div class="mut">일정이 비어 있어</div>`; return;
+        hero.innerHTML = `<div class="hr"><div><span class="eyebrow">다음 레이드</span><h2>잡힌 레이드가 없다거</h2><p class="hr__meta">먼저 모집을 올려서 사람을 모아보라거~</p><div class="hr__act"><a class="btn btn--gold btn--lg" href="#/raid">모집 올리기</a></div></div></div>`;
+        sched.innerHTML = `<div class="mut">일정 없음</div>`; return;
       }
       const f = rs[0], mem = f.members || [], mine = mem.some(m => m.user_id === u.id), tool = Tools.list.find(t => t.dungeon && t.dungeon === f.dungeon);
       hero.innerHTML = `<div class="hr"><div>
@@ -218,15 +219,17 @@
 
   // ───── 미니게임 ─────
   function gamesPage() {
-    view.innerHTML = `<div class="page page--mid"><div class="ph"><div><h1>미니게임</h1><p>가입 안 해도 바로 할 수 있어. 상회원은 닉네임이 반짝여.</p></div></div>
+    view.innerHTML = `<div class="page page--mid"><div class="ph"><div><h1>미니게임</h1><p>가입 없이 바로 한다거. 상회원은 닉네임이 반짝인다거~</p></div></div>
       <div class="glist">${Games.list.map(g => `<a class="gcard" href="#/game/${g.id}" data-tilt><div class="gcard__pic" style="background-image:url('${g.thumb}')"></div><div class="gcard__b"><h2>${esc(g.name)}</h2><p>${esc(g.desc)}</p><div class="meta"><span class="tag tag--gold">최대 ${g.max}명</span>${g.live ? '<span class="tag tag--teal">실시간</span>' : ''}</div></div></a>`).join('')}
-      <div class="gcard gcard--soon"><div class="gcard__b"><h2>다음 게임</h2><p>준비 중이야.</p></div></div></div></div>`;
+      <div class="gcard gcard--soon"><div class="gcard__b"><h2>다음 게임</h2><p>준비 중</p></div></div></div></div>`;
   }
   function gamePage(id) { const g = Games.get(id); if (!g) return go('#/games'); g.render(view, { esc, toast, me, isOk }); }
 
   // ───── 도구 ─────
   function toolsPage() {
-    view.innerHTML = `<div class="page page--narrow"><div class="ph"><h1>도구</h1></div><div class="list">${Tools.list.map(t => `<a href="#/tool/${t.id}">${IC[t.icon] || IC.tools}<span class="t">${esc(t.full || t.name)}</span><span class="m">${esc(t.desc || '')}</span></a>`).join('')}</div></div>`;
+    view.innerHTML = `<div class="page page--mid"><div class="ph"><div><h1>공대장 도구</h1><p>레이드를 고르면 1팟·2팟 자리와 복사용 공지가 바로 나온다거.</p></div></div>
+      <div class="glist">${Tools.list.map(t => `<a class="gcard" href="#/tool/${t.id}" data-tilt><div class="gcard__pic gcard__pic--art" style="background-image:url('${t.thumb || ''}')"></div><div class="gcard__b"><h2>${esc(t.dungeon || t.name)}</h2><p>${esc(t.desc || '')}</p><div class="meta"><span class="tag tag--gold">10인</span><span class="tag">자리 넣기</span></div></div></a>`).join('')}
+      <div class="gcard gcard--soon"><div class="gcard__b"><h2>다음 레이드</h2><p>준비 중</p></div></div></div></div>`;
   }
   function toolPage(id) {
     const t = Tools.get(id); if (!t) return go('#/tools');
@@ -236,29 +239,29 @@
   // ───── 가입·로그인 ─────
   function login() {
     if (me()) return go('#/home');
-    view.innerHTML = `<div class="page"><div class="auth"><h1>로그인</h1><p>아이디와 비밀번호를 넣어줘.</p>
+    view.innerHTML = `<div class="page"><div class="auth"><h1>로그인</h1><p>아이디와 비밀번호를 넣으라거.</p>
       <form class="form" id="f"><label class="field"><span>아이디</span><input class="input" name="username" autocomplete="username" required autofocus></label>
       <label class="field"><span>비밀번호</span><input class="input" type="password" name="password" autocomplete="current-password" required></label>
       <p class="err" id="err"></p><button class="btn btn--gold btn--lg">로그인</button></form>
-      <p class="auth__alt">처음이야? <a href="#/signup">가입하기</a> · 비밀번호를 잊었으면 상회장에게 초기화를 부탁해.</p></div></div>`;
+      <p class="auth__alt">처음이냐거? <a href="#/signup">가입하기</a> · 비밀번호를 잊었으면 상회장에게 초기화를 부탁하라거.</p></div></div>`;
     $('#f').onsubmit = e => { e.preventDefault(); const f = new FormData(e.target);
       run(e.submitter, async () => { try { await S.signIn({ username: f.get('username'), password: f.get('password') }); } catch (x) { $('#err').textContent = x.message; return; } go('#/home'); }); };
   }
   function signup() {
     if (me()) return go('#/me');
-    view.innerHTML = `<div class="page"><div class="auth"><h1>상회원 가입</h1><p>가입하면 상회장이 확인하고 승인해줘. 닉네임과 프로필 사진은 가입 뒤에 언제든 바꿀 수 있어.</p>
+    view.innerHTML = `<div class="page"><div class="auth"><h1>상회원 가입</h1><p>가입하면 상회장이 확인하고 승인한다거. 닉네임과 프로필 사진은 가입 뒤에 언제든 바꾼다거.</p>
       <form class="form" id="f">
         <label class="field"><span>로그인 계정</span><input class="input" name="username" autocomplete="username" required minlength="2" maxlength="20" pattern="[0-9A-Za-z가-힣_]+" autofocus><small>한글·영문·숫자 2~20자</small></label>
         <div class="row2"><label class="field"><span>비밀번호</span><input class="input" type="password" name="password" autocomplete="new-password" required minlength="6"><small>6자 이상</small></label>
         <label class="field"><span>비밀번호 다시</span><input class="input" type="password" name="password2" autocomplete="new-password" required></label></div>
-        <label class="field"><span>본캐 닉네임 (필수)</span><input class="input" name="mainChar" required maxlength="20"><small>게임 안 본캐 이름. 상회장이 이걸 보고 상회원인지 확인해</small></label>
-        <label class="field"><span>사이트 닉네임</span><input class="input" name="nick" maxlength="20" placeholder="비우면 본캐 닉네임 그대로"><small>사이트에서 보이는 이름. 언제든 자유롭게 바꿀 수 있어</small></label>
-        <label class="field"><span>비상연락처 (선택)</span><input class="input" name="contact" maxlength="100" placeholder="전화, 카톡 아이디, 디스코드 등 아무거나"><small>상회장만 볼 수 있어</small></label>
+        <label class="field"><span>본캐 닉네임 (필수)</span><input class="input" name="mainChar" required maxlength="20"><small>게임 안 본캐 이름. 상회장이 이걸 보고 상회원인지 확인한다거</small></label>
+        <label class="field"><span>사이트 닉네임</span><input class="input" name="nick" maxlength="20" placeholder="비우면 본캐 닉네임 그대로"><small>사이트에서 보이는 이름. 언제든 변경 가능</small></label>
+        <label class="field"><span>비상연락처 (선택)</span><input class="input" name="contact" maxlength="100" placeholder="전화, 카톡 아이디, 디스코드 등 아무거나"><small>상회장만 열람</small></label>
         <p class="err" id="err"></p><button class="btn btn--gold btn--lg">가입 신청</button></form>
-      <p class="auth__alt">이미 가입했어? <a href="#/login">로그인</a></p></div></div>`;
+      <p class="auth__alt">이미 가입했냐거? <a href="#/login">로그인</a></p></div></div>`;
     $('#f').onsubmit = e => { e.preventDefault(); const f = new FormData(e.target);
-      if (f.get('password') !== f.get('password2')) { $('#err').textContent = '비밀번호 두 칸이 서로 달라'; return; }
-      run(e.submitter, async () => { try { await S.signUp({ username: f.get('username'), password: f.get('password'), mainChar: f.get('mainChar'), nick: f.get('nick').trim() || f.get('mainChar'), contact: f.get('contact') }); } catch (x) { $('#err').textContent = x.message; return; } toast('가입 신청 완료. 승인을 기다려줘'); go('#/me'); }); };
+      if (f.get('password') !== f.get('password2')) { $('#err').textContent = '비밀번호 두 칸이 서로 다르다거'; return; }
+      run(e.submitter, async () => { try { await S.signUp({ username: f.get('username'), password: f.get('password'), mainChar: f.get('mainChar'), nick: f.get('nick').trim() || f.get('mainChar'), contact: f.get('contact') }); } catch (x) { $('#err').textContent = x.message; return; } toast('가입 신청 완료. 승인을 기다리라거~'); go('#/me'); }); };
   }
 
   // ───── 내 정보 (닉네임·프로필 사진) ─────
@@ -271,22 +274,22 @@
         <div class="ph__act">${isAdmin() ? '<a class="btn" href="#/admin">사이트관리</a>' : ''}<button class="btn btn--plain" id="out">로그아웃</button></div></div>
       ${u.status !== 'approved' ? `<div class="box" style="margin-bottom:12px">${gate(u.status)}</div>` : ''}
       <form class="box form" id="pf">
-        <div class="pf"><span id="av">${avatar(u, 'avatar--lg')}</span><div><b>프로필 사진</b><div class="mut" style="font-size:12.5px">글·댓글·모집 명단에 보여</div>
+        <div class="pf"><span id="av">${avatar(u, 'avatar--lg')}</span><div><b>프로필 사진</b><div class="mut" style="font-size:12.5px">글·댓글·모집 명단에 표시</div>
           <div class="pf__btns"><label class="btn btn--sm">사진 고르기<input type="file" id="avFile" accept="image/*" hidden></label><button type="button" class="btn btn--sm btn--plain" id="avDel">지우기</button></div></div></div>
         <div class="row2"><label class="field"><span>사이트 닉네임</span><input class="input" name="charName" value="${esc(u.char_name)}" required maxlength="20"></label>
         <label class="field"><span>직업</span><select class="select" name="job"><option value="">안 정함</option>${JOBS.map(j => `<option ${j === u.job ? 'selected' : ''}>${j}</option>`).join('')}</select></label></div>
-        <div class="row2"><label class="field"><span>본캐 닉네임</span><input class="input" value="${esc(u.main_char)}" disabled><small>바꾸려면 상회장에게 말해줘</small></label>
-        <label class="field"><span>비상연락처</span><input class="input" name="contact" id="contact" maxlength="100" placeholder="비워둬도 돼"><small>상회장만 볼 수 있어</small></label></div>
+        <div class="row2"><label class="field"><span>본캐 닉네임</span><input class="input" value="${esc(u.main_char)}" disabled><small>변경은 상회장에게 문의</small></label>
+        <label class="field"><span>비상연락처</span><input class="input" name="contact" id="contact" maxlength="100" placeholder="비워도 됨"><small>상회장만 열람</small></label></div>
         <div><button class="btn btn--gold">저장</button></div></form>
       <form class="box form" id="pw"><label class="field"><span>새 비밀번호</span><input class="input" type="password" name="pw" autocomplete="new-password" minlength="${S.live ? 6 : 1}" required></label>
         <div><button class="btn">비밀번호 바꾸기</button></div></form></div>`;
     $('#avFile').onchange = e => { file = e.target.files[0] || null; remove = false; if (file) $('#av').innerHTML = `<img class="avatar avatar--lg" src="${URL.createObjectURL(file)}" alt="">`; };
     $('#avDel').onclick = () => { file = null; remove = true; $('#av').innerHTML = avatar({ char_name: $('[name=charName]').value }, 'avatar--lg'); };
     $('#pf').onsubmit = e => { e.preventDefault(); const f = new FormData(e.target);
-      run(e.submitter, async () => { await S.updateMe({ charName: f.get('charName').trim(), job: f.get('job'), contact: f.get('contact').trim(), avatarFile: file, removeAvatar: remove }); toast('저장했어'); mePage(); }); };
+      run(e.submitter, async () => { await S.updateMe({ charName: f.get('charName').trim(), job: f.get('job'), contact: f.get('contact').trim(), avatarFile: file, removeAvatar: remove }); toast('저장했다거'); mePage(); }); };
     S.myContact().then(c => { const el = $('#contact'); if (el) el.value = c; }).catch(() => {});
     pushBox();
-    $('#pw').onsubmit = e => { e.preventDefault(); const f = new FormData(e.target); run(e.submitter, async () => { await S.changePassword(f.get('pw')); e.target.reset(); toast('비밀번호 바꿨어'); }); };
+    $('#pw').onsubmit = e => { e.preventDefault(); const f = new FormData(e.target); run(e.submitter, async () => { await S.changePassword(f.get('pw')); e.target.reset(); toast('비밀번호를 바꿨다거'); }); };
     $('#out').onclick = () => run(null, async () => { await S.signOut(); go('#/home'); });
   }
 
@@ -303,13 +306,13 @@
       ${ps.map((p, i) => `<a class="dc__r" href="#/post/${p.id}" ${p.images?.[0] ? `data-img="${esc(p.images[0])}"` : ''}><span class="num">${ps.length - i}</span><span class="dc__cat">${esc(boardName(p.cat))}</span>
         <span class="dc__t"><b>${esc(p.title)}</b>${p.images?.length ? IC.pic : ''}${p.comment_count ? `<em>[${p.comment_count}]</em>` : ''}</span>
         <span class="dc__w">${avatar(p.author)}${esc(nick(p.author))}</span><span class="num">${shortDate(p.created_at)}</span></a>`).join('')}</div>`
-      : `<div class="empty"><b>아직 글이 없어</b>${isOk() ? '첫 글을 올려봐.' : '글쓰기는 상회원만 할 수 있어.'}</div>`;
+      : `<div class="empty"><b>아직 글이 없다거</b>${isOk() ? '첫 글을 올려보라거~' : '글쓰기는 상회원 전용'}</div>`;
     $('#bq').oninput = e => { const v = e.target.value.trim().toLowerCase(); $$('.dc__r').forEach(r => r.hidden = v && !r.textContent.toLowerCase().includes(v)); };
   }
   async function post(id) {
     view.innerHTML = `<div class="page page--narrow"><div class="empty">불러오는 중</div></div>`;
     const p = await S.getPost(rid(id)).catch(() => null);
-    if (!p) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>없는 글이야</b><a class="btn btn--sm" href="#/board" style="margin-top:8px">게시판으로</a></div></div>`; return; }
+    if (!p) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>없는 글이라거</b><a class="btn btn--sm" href="#/board" style="margin-top:8px">게시판으로</a></div></div>`; return; }
     const u = me(), mine = u && (p.author_id === u.id || isAdmin());
     view.innerHTML = `<div class="page page--narrow"><article class="post">
       <a class="btn btn--plain btn--sm" href="#/board/${esc(p.cat)}" style="margin-left:-10px">← ${esc(boardName(p.cat))}</a>
@@ -318,15 +321,15 @@
       ${p.body ? `<div class="post__body">${esc(p.body)}</div>` : '<div style="height:16px"></div>'}
       <div class="post__imgs">${(p.images || []).map((s, i) => `<img src="${esc(s)}" alt="${esc(p.title)} 사진 ${i + 1}" loading="lazy">`).join('')}</div>
       <section class="sec"><div class="sec__h"><h2>댓글</h2></div><div id="cmts"></div>
-        ${isOk() ? `<form id="cf" style="display:flex;gap:6px;margin-top:12px"><input class="input" name="body" maxlength="1000" required placeholder="댓글" aria-label="댓글"><button class="btn btn--gold">등록</button></form>` : `<p class="mut" style="margin-top:12px">댓글은 상회원만 달 수 있어.</p>`}
+        ${isOk() ? `<form id="cf" style="display:flex;gap:6px;margin-top:12px"><input class="input" name="body" maxlength="1000" required placeholder="댓글" aria-label="댓글"><button class="btn btn--gold">등록</button></form>` : `<p class="mut" style="margin-top:12px">댓글은 상회원 전용</p>`}
       </section></article></div>`;
     async function loadC() {
       const cs = await S.listComments(p.id);
-      $('#cmts').innerHTML = cs.length ? cs.map(c => `<div class="cmt">${avatar(c.author)}<div class="cmt__b"><div class="meta"><b style="color:var(--ink)">${esc(nick(c.author))}</b><span>${ago(c.created_at)}</span>${u && (c.author_id === u.id || isAdmin()) ? `<button class="btn btn--plain btn--sm" data-dc="${c.id}" style="margin-left:auto">지우기</button>` : ''}</div><p>${esc(c.body)}</p></div></div>`).join('') : '<p class="empty">아직 댓글이 없어</p>';
+      $('#cmts').innerHTML = cs.length ? cs.map(c => `<div class="cmt">${avatar(c.author)}<div class="cmt__b"><div class="meta"><b style="color:var(--ink)">${esc(nick(c.author))}</b><span>${ago(c.created_at)}</span>${u && (c.author_id === u.id || isAdmin()) ? `<button class="btn btn--plain btn--sm" data-dc="${c.id}" style="margin-left:auto">지우기</button>` : ''}</div><p>${esc(c.body)}</p></div></div>`).join('') : '<p class="empty">아직 댓글이 없다거</p>';
       $$('[data-dc]').forEach(b => b.onclick = () => run(b, async () => { await S.deleteComment(rid(b.dataset.dc)); loadC(); }));
     }
     loadC();
-    if ($('#del')) $('#del').onclick = () => { if (confirm('이 글을 지울까?')) run($('#del'), async () => { await S.deletePost(p.id); go('#/board/' + p.cat); }); };
+    if ($('#del')) $('#del').onclick = () => { if (confirm('이 글을 지우겠냐거?')) run($('#del'), async () => { await S.deletePost(p.id); go('#/board/' + p.cat); }); };
     if ($('#cf')) $('#cf').onsubmit = e => { e.preventDefault(); const f = new FormData(e.target); run(e.submitter, async () => { await S.addComment(p.id, f.get('body').trim()); e.target.reset(); loadC(); }); };
   }
   function write(q) {
@@ -363,7 +366,7 @@
     function draw() {
       const dayIdx = Math.round((new Date(sel.getFullYear(), sel.getMonth(), sel.getDate()) - day0()) / 86400e3);
       const diff = Math.round((sel - Date.now()) / 60000), past = diff <= 0;
-      const rel = past ? '이미 지난 시간이야' : (diff >= 1440 ? Math.floor(diff / 1440) + '일 ' : '') + (diff % 1440 >= 60 ? Math.floor(diff % 1440 / 60) + '시간 ' : '') + (diff % 60) + '분 뒤 출발';
+      const rel = past ? '이미 지난 시간이라거' : (diff >= 1440 ? Math.floor(diff / 1440) + '일 ' : '') + (diff % 1440 >= 60 ? Math.floor(diff % 1440 / 60) + '시간 ' : '') + (diff % 60) + '분 뒤 출발';
       el.innerHTML = `<div class="when__row when__q">${quick.map((q, i) => `<button type="button" data-q="${i}">${q[0]}</button>`).join('')}</div>
         <span class="when__lb">날짜</span><div class="when__row when__d">${Array.from({ length: 7 }, (_, i) => { const d = at(i, 0, 0); return `<button type="button" data-d="${i}" class="${i === dayIdx ? 'on' : ''}">${i === 0 ? '오늘' : i === 1 ? '내일' : d.getDate() + '일'}<small>${WD[d.getDay()]}</small></button>`; }).join('')}</div>
         <span class="when__lb">시</span><div class="when__row when__h">${Array.from({ length: 24 }, (_, h) => `<button type="button" data-h="${h}" class="${h === sel.getHours() ? 'on' : ''}">${h}</button>`).join('')}</div>
@@ -384,22 +387,22 @@
       <div class="ph__act"><a class="btn btn--plain" href="#/me">${IC.bell}알림 설정</a><button class="btn btn--gold" id="openNew">모집 올리기</button></div></div><div id="list"><div class="empty">불러오는 중</div></div></div>`;
     $('#openNew').onclick = () => {
       const pad = n => String(n).padStart(2, '0'), t = new Date(Date.now() + 3600e3); t.setMinutes(0, 0, 0);
-      const d = sheet(`<h2>모집 올리기</h2><p>인원은 ${RAID_SIZE}명으로 고정이야.</p><form class="form" id="nf">
+      const d = sheet(`<h2>모집 올리기</h2><p>인원은 ${RAID_SIZE}명 고정.</p><form class="form" id="nf">
         <label class="field"><span>제목</span><input class="input" name="title" required maxlength="60" placeholder="예) 무스펠 2넴 트라이" autofocus></label>
         <div><label class="field"><span>던전</span><select class="select" name="dungeon"><option value="">안 고름</option>${Tools.list.filter(t => t.dungeon).map(t => `<option>${esc(t.dungeon)}</option>`).join('')}</select></label></div>
         <div class="field"><span>출발</span><div class="when" id="when"></div></div>
-        <div class="row2"><label class="field"><span>내 역할 (나는 자동으로 참여돼)</span><select class="select" name="role">${ROLES.map(x => `<option ${x === '딜러' ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+        <div class="row2"><label class="field"><span>내 역할 (나는 자동 참여)</span><select class="select" name="role">${ROLES.map(x => `<option ${x === '딜러' ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
         <label class="field"><span>메모</span><input class="input" name="note" maxlength="200" placeholder="조건, 모이는 곳"></label></div>
         <div class="acts"><button type="button" class="btn btn--plain" data-close>취소</button><button class="btn btn--gold">올리기</button></div></form>`);
       const picker = whenPicker($('#when', d), t);
       $('#nf', d).onsubmit = e => { e.preventDefault(); const f = new FormData(e.target);
-        if (picker.get() <= Date.now()) { toast('이미 지난 시간이야. 출발 시간을 다시 골라줘', true); return; }
+        if (picker.get() <= Date.now()) { toast('이미 지난 시간이라거. 출발 시간을 다시 고르라거', true); return; }
         run(e.submitter, async () => { await S.createRaid({ title: f.get('title').trim(), dungeon: f.get('dungeon'), starts_at: picker.get().toISOString(), slots: RAID_SIZE, note: f.get('note').trim() }).then(id => S.joinRaid(id, f.get('role'))); d.close(); load(); refreshStatus(); }); };
     };
     async function load() {
       const rs = await S.listRaids().catch(e => { toast(e.message, true); return []; });
       if (!$('#list')) return;
-      if (!rs.length) { $('#list').innerHTML = `<div class="empty"><b>잡힌 레이드가 없어</b>오른쪽 위 '모집 올리기'로 시작해.</div>`; return; }
+      if (!rs.length) { $('#list').innerHTML = `<div class="empty"><b>잡힌 레이드가 없다거</b>오른쪽 위 '모집 올리기'로 시작한다거.</div>`; return; }
       const u = me(), days = {};
       rs.forEach(r => (days[dayKey(r.starts_at)] ||= []).push(r));
       $('#list').innerHTML = Object.values(days).map(list => `<section class="rday"><h2>${fmtDate(list[0].starts_at)}</h2>${list.map(r => {
@@ -419,7 +422,7 @@
       Fx.refresh(view);
       $$('[data-join]').forEach(b => b.onclick = () => run(b, async () => { await S.joinRaid(rid(b.dataset.join), $(`[data-role="${b.dataset.join}"]`).value); load(); }));
       $$('[data-leave]').forEach(b => b.onclick = () => run(b, async () => { await S.leaveRaid(rid(b.dataset.leave)); load(); }));
-      $$('[data-delr]').forEach(b => b.onclick = () => { if (confirm('이 모집을 지울까?')) run(b, async () => { await S.deleteRaid(rid(b.dataset.delr)); load(); refreshStatus(); }); });
+      $$('[data-delr]').forEach(b => b.onclick = () => { if (confirm('이 모집을 지우겠냐거?')) run(b, async () => { await S.deleteRaid(rid(b.dataset.delr)); load(); refreshStatus(); }); });
     }
     load();
   }
@@ -430,45 +433,45 @@
     const box = document.createElement('div'); box.className = 'box form'; box.id = 'pushBox';
     let offs = []; try { offs = await S.getPushOffsets(); } catch (e) {}
     const custom = offs.find(o => !Push.OPTIONS.includes(o)) || '';
-    box.innerHTML = `<div><b>레이드 알림</b><div class="mut" style="font-size:12.5px">내가 참여한 레이드가 출발하기 전에 이 기기로 알려줘. 언제 받을지 골라.</div></div>
+    box.innerHTML = `<div><b>레이드 알림</b><div class="mut" style="font-size:12.5px">내가 참여한 레이드가 출발하기 전에 이 기기로 알려준다거. 언제 받을지 고르라거.</div></div>
       <div class="checks">${Push.OPTIONS.map(o => `<label><input type="checkbox" value="${o}" ${offs.includes(o) ? 'checked' : ''}>${Push.label(o)} 전</label>`).join('')}
         <label>직접 <input class="input" id="pCustom" type="number" min="1" max="10080" value="${custom}" placeholder="분" style="width:74px;height:24px;padding:0 6px"> 분 전</label></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button type="button" class="btn btn--gold" id="pOn">이 기기에서 알림 켜기</button><button type="button" class="btn btn--plain" id="pTest">시험 알림 보내기</button><span class="mut" id="pState" style="font-size:12.5px"></span></div>
       <div class="howto">
-        <details ${Push.isIOS ? 'open' : ''}><summary>아이폰에서 받는 법</summary><ol><li>사파리로 이 사이트를 열어.</li><li>아래 가운데 공유 버튼(네모에 화살표)을 누르고 '홈 화면에 추가'를 눌러.</li><li>홈 화면에 생긴 슈고상회 아이콘으로 다시 들어와서 로그인해.</li><li>내 정보에서 '이 기기에서 알림 켜기'를 누르고 '허용'을 눌러.</li></ol></details>
-        <details><summary>갤럭시(안드로이드)에서 받는 법</summary><ol><li>크롬이나 삼성 인터넷으로 이 사이트를 열고 로그인해.</li><li>내 정보에서 '이 기기에서 알림 켜기'를 누르고 '허용'을 눌러.</li><li>앱처럼 쓰고 싶으면 오른쪽 위 메뉴(⋮)에서 '홈 화면에 추가'를 눌러.</li></ol></details>
-        <details><summary>PC에서 받는 법</summary><ol><li>'이 기기에서 알림 켜기'를 누르고 '허용'을 눌러.</li><li>브라우저가 켜져 있으면 윈도우 알림으로 떠.</li></ol></details>
+        <details ${Push.isIOS ? 'open' : ''}><summary>아이폰에서 받는 법</summary><ol><li>사파리로 이 사이트 열기</li><li>아래 가운데 공유 버튼(네모에 화살표)을 누르고 '홈 화면에 추가' 누르기</li><li>홈 화면에 생긴 슈고상회 아이콘으로 다시 들어와서 로그인</li><li>내 정보에서 '이 기기에서 알림 켜기'를 누르고 '허용' 누르기</li></ol></details>
+        <details><summary>갤럭시(안드로이드)에서 받는 법</summary><ol><li>크롬이나 삼성 인터넷으로 이 사이트를 열고 로그인</li><li>내 정보에서 '이 기기에서 알림 켜기'를 누르고 '허용' 누르기</li><li>앱처럼 쓰고 싶으면 오른쪽 위 메뉴(⋮)에서 '홈 화면에 추가' 누르기</li></ol></details>
+        <details><summary>PC에서 받는 법</summary><ol><li>'이 기기에서 알림 켜기'를 누르고 '허용' 누르기</li><li>브라우저가 켜져 있으면 윈도우 알림으로 표시</li></ol></details>
       </div>`;
     page.appendChild(box);
-    const save = async () => { const a = $$('.checks input[type=checkbox]:checked', box).map(x => Number(x.value)), c = Number($('#pCustom', box).value); if (c > 0) a.push(c); await S.setPushOffsets([...new Set(a)].sort((x, y) => y - x)); toast('알림 시간을 저장했어'); };
+    const save = async () => { const a = $$('.checks input[type=checkbox]:checked', box).map(x => Number(x.value)), c = Number($('#pCustom', box).value); if (c > 0) a.push(c); await S.setPushOffsets([...new Set(a)].sort((x, y) => y - x)); toast('알림 시간을 저장했다거'); };
     $$('.checks input', box).forEach(x => x.onchange = () => run(null, save));
     const paint = async () => { const st = await Push.state(); $('#pOn', box).textContent = st === 'on' ? '이 기기 알림 끄기' : '이 기기에서 알림 켜기';
-      $('#pState', box).textContent = { on: S.live ? '켜져 있어' : '켜져 있어 (데모: 사이트를 켜둔 동안만 울려)', off: '', denied: '브라우저에서 알림이 막혀 있어. 주소창 옆 자물쇠에서 알림을 허용해줘', unsupported: '이 브라우저는 알림을 못 써', 'ios-install': '아이폰은 먼저 홈 화면에 추가해야 해 (아래 방법)' }[st];
+      $('#pState', box).textContent = { on: S.live ? '켜짐' : '켜짐 (데모: 사이트를 켜둔 동안만 울림)', off: '', denied: '브라우저에서 알림이 막혀 있다거. 주소창 옆 자물쇠에서 알림을 허용하라거', unsupported: '이 브라우저는 알림 미지원', 'ios-install': '아이폰은 먼저 홈 화면에 추가 (아래 방법)' }[st];
       $('#pOn', box).disabled = st === 'unsupported' || st === 'ios-install' || st === 'denied'; };
-    $('#pOn', box).onclick = e => run(e.target, async () => { if (await Push.state() === 'on') { await Push.disable(); toast('이 기기 알림을 껐어. 완전히 끄려면 브라우저 설정에서 알림을 차단해'); } else await Push.enable(); paint(); });
-    $('#pTest', box).onclick = () => run(null, async () => { if (await Push.state() !== 'on') throw new Error('먼저 알림을 켜줘'); await Push.show('시험 알림', '이렇게 레이드 출발 전에 알려줄게.', 'test'); });
+    $('#pOn', box).onclick = e => run(e.target, async () => { if (await Push.state() === 'on') { await Push.disable(); toast('이 기기 알림을 껐다거. 완전히 끄려면 브라우저 설정에서 알림을 차단하라거'); } else await Push.enable(); paint(); });
+    $('#pTest', box).onclick = () => run(null, async () => { if (await Push.state() !== 'on') throw new Error('먼저 알림을 켜라거'); await Push.show('시험 알림', '이렇게 레이드 출발 전에 알려준다거~', 'test'); });
     paint();
   }
 
   function downloads() {
     const list = C.downloads || [];
-    view.innerHTML = `<div class="page page--narrow"><div class="ph"><h1>다운로드</h1></div><div class="list">${list.length ? list.map(d => `<div><span class="t">${esc(d.name)} <span class="mut">v${esc(d.version)}</span></span><span class="m">${esc(d.desc || '')}</span><a class="btn btn--gold btn--sm" href="${esc(d.url)}" download>받기</a></div>`).join('') : '<div class="mut">아직 올라온 게 없어</div>'}</div></div>`;
+    view.innerHTML = `<div class="page page--narrow"><div class="ph"><h1>다운로드</h1></div><div class="list">${list.length ? list.map(d => `<div><span class="t">${esc(d.name)} <span class="mut">v${esc(d.version)}</span></span><span class="m">${esc(d.desc || '')}</span><a class="btn btn--gold btn--sm" href="${esc(d.url)}" download>받기</a></div>`).join('') : '<div class="mut">아직 올라온 게 없다거</div>'}</div></div>`;
   }
 
   // ───── 승인 대기 (보조AI · 관리자) — 명단 보기 + 승인·거절 ─────
   async function pendingPage() {
-    if (!isAi() && !isAdmin()) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>볼 수 없는 화면이야</b></div></div>`; return; }
+    if (!isAi() && !isAdmin()) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>볼 수 없는 화면이라거</b></div></div>`; return; }
     const list = await S.listPending().catch(e => { toast(e.message, true); return []; });
     pendingCount = list.length; renderNav('pending');
     document.title = `승인 대기 ${list.length}명 · 슈고상회`;
     view.innerHTML = `<div class="page page--narrow">
-      <div class="ph"><div><h1>승인 대기 <span id="pendN">${list.length}</span>명</h1><p>가입 신청하고 승인을 기다리는 사람. 1분마다 새로 읽어.</p></div></div>
-      ${list.length ? `<div class="list">${list.map(u => `<div class="pend"><div><span class="t">${esc(u.char_name || '')}</span><span class="m">본캐 ${esc(u.main_char || '-')} · ${fmtDate(u.created_at)} ${fmtTime(u.created_at)} 신청</span></div><div class="pend__b"><button class="btn btn--gold btn--sm" data-ok="${u.id}" data-nm="${esc(u.char_name || '')}">승인</button><button class="btn btn--sm" data-no="${u.id}" data-nm="${esc(u.char_name || '')}">거절</button></div></div>`).join('')}</div>` : '<div class="empty"><b>승인 대기 0명</b><p>지금 기다리는 사람이 없어.</p></div>'}
+      <div class="ph"><div><h1>승인 대기 <span id="pendN">${list.length}</span>명</h1><p>가입 신청하고 승인을 기다리는 사람. 1분마다 새로 고침.</p></div></div>
+      ${list.length ? `<div class="list">${list.map(u => `<div class="pend"><div><span class="t">${esc(u.char_name || '')}</span><span class="m">본캐 ${esc(u.main_char || '-')} · ${fmtDate(u.created_at)} ${fmtTime(u.created_at)} 신청</span></div><div class="pend__b"><button class="btn btn--gold btn--sm" data-ok="${u.id}" data-nm="${esc(u.char_name || '')}">승인</button><button class="btn btn--sm" data-no="${u.id}" data-nm="${esc(u.char_name || '')}">거절</button></div></div>`).join('')}</div>` : '<div class="empty"><b>승인 대기 0명</b><p>지금 기다리는 사람이 없다거.</p></div>'}
     </div>`;
     const decide = (b, yes) => b.onclick = async () => {
-      if (!confirm(`${b.dataset.nm} ${yes ? '승인' : '거절'}할까?`)) return;
+      if (!confirm(`${b.dataset.nm} ${yes ? '승인' : '거절'}하겠냐거?`)) return;
       b.disabled = true;
-      try { await S.decidePending(yes ? b.dataset.ok : b.dataset.no, yes); toast(`${b.dataset.nm} ${yes ? '승인했어' : '거절했어'}`); } catch (e) { toast(e.message, true); }
+      try { await S.decidePending(yes ? b.dataset.ok : b.dataset.no, yes); toast(`${b.dataset.nm} ${yes ? '승인했다거' : '거절했다거'}`); } catch (e) { toast(e.message, true); }
       pendingPage();
     };
     view.querySelectorAll('[data-ok]').forEach(b => decide(b, true));
@@ -479,7 +482,7 @@
 
   // ───── 사이트관리 ─────
   async function admin(tab = 'pending') {
-    if (!isAdmin()) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>관리자만 볼 수 있어</b></div></div>`; return; }
+    if (!isAdmin()) { view.innerHTML = `<div class="page page--narrow"><div class="empty"><b>관리자 전용</b></div></div>`; return; }
     const users = await S.listProfiles().catch(e => { toast(e.message, true); return []; });
     const pending = users.filter(u => u.status === 'pending');
     pendingCount = pending.length; renderNav('admin');
@@ -496,29 +499,29 @@
         ${tab === 'members' ? `<button class="btn btn--plain btn--sm" data-pw="${u.id}" data-name="${esc(nick(u))}">비번 초기화</button>` : ''}
         ${tab === 'members' && u.status === 'rejected' && (u.role || 'member') === 'member' ? `<button class="btn btn--sm" data-del="${u.id}" data-name="${esc(nick(u))}">삭제</button>` : ''}</div></td></tr>`;
     const table = rows => `<table class="tbl"><thead><tr><th>본캐 닉네임</th><th>사이트 닉네임</th><th>로그인 계정</th><th>비상연락처</th><th>상태</th><th>가입</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-    if (tab === 'pending') body.innerHTML = pending.length ? table(pending.map(row).join('')) : `<div class="empty"><b>승인 기다리는 사람이 없어</b></div>`;
+    if (tab === 'pending') body.innerHTML = pending.length ? table(pending.map(row).join('')) : `<div class="empty"><b>승인 대기 없음</b></div>`;
     const rejected = users.filter(u => u.status === 'rejected' && (u.role || 'member') === 'member');
     if (tab === 'members') body.innerHTML = `<div class="adm-top"><input class="input" id="q" placeholder="닉네임·아이디 검색" style="max-width:280px" aria-label="회원 검색">${rejected.length ? `<button class="btn" id="purge">거절된 사람 ${rejected.length}명 목록에서 삭제</button>` : ''}</div>${table(users.map(row).join(''))}`;
     if (tab === 'posts') { const ps = await S.listPosts({ limit: 200 });
-      body.innerHTML = ps.length ? `<table class="tbl"><thead><tr><th>제목</th><th>게시판</th><th>글쓴이</th><th>날짜</th><th></th></tr></thead><tbody>${ps.map(p => `<tr><td><a href="#/post/${p.id}"><b>${esc(p.title)}</b></a></td><td>${esc(boardName(p.cat))}</td><td>${esc(nick(p.author))}</td><td class="mut">${ago(p.created_at)}</td><td><div class="acts"><button class="btn btn--sm" data-dp="${p.id}">지우기</button></div></td></tr>`).join('')}</tbody></table>` : `<div class="empty"><b>글이 없어</b></div>`; }
+      body.innerHTML = ps.length ? `<table class="tbl"><thead><tr><th>제목</th><th>게시판</th><th>글쓴이</th><th>날짜</th><th></th></tr></thead><tbody>${ps.map(p => `<tr><td><a href="#/post/${p.id}"><b>${esc(p.title)}</b></a></td><td>${esc(boardName(p.cat))}</td><td>${esc(nick(p.author))}</td><td class="mut">${ago(p.created_at)}</td><td><div class="acts"><button class="btn btn--sm" data-dp="${p.id}">지우기</button></div></td></tr>`).join('')}</tbody></table>` : `<div class="empty"><b>글 없음</b></div>`; }
     if (tab === 'raids') { const rs = await S.listRaids();
-      body.innerHTML = rs.length ? `<table class="tbl"><thead><tr><th>모집</th><th>출발</th><th>인원</th><th>모집자</th><th></th></tr></thead><tbody>${rs.map(r => `<tr><td><b>${esc(r.title)}</b></td><td>${fmtDate(r.starts_at)} ${fmtTime(r.starts_at)}</td><td class="num">${(r.members || []).length}/${r.slots}</td><td>${esc(nick(r.author))}</td><td><div class="acts"><button class="btn btn--sm" data-dr="${r.id}">지우기</button></div></td></tr>`).join('')}</tbody></table>` : `<div class="empty"><b>잡힌 레이드가 없어</b></div>`; }
+      body.innerHTML = rs.length ? `<table class="tbl"><thead><tr><th>모집</th><th>출발</th><th>인원</th><th>모집자</th><th></th></tr></thead><tbody>${rs.map(r => `<tr><td><b>${esc(r.title)}</b></td><td>${fmtDate(r.starts_at)} ${fmtTime(r.starts_at)}</td><td class="num">${(r.members || []).length}/${r.slots}</td><td>${esc(nick(r.author))}</td><td><div class="acts"><button class="btn btn--sm" data-dr="${r.id}">지우기</button></div></td></tr>`).join('')}</tbody></table>` : `<div class="empty"><b>잡힌 레이드가 없다거</b></div>`; }
     if (tab === 'notice') { const cur = await S.getNotice();
       body.innerHTML = `<form class="form" id="nf" style="max-width:560px"><label class="field"><span>홈 맨 위 공지 (비우면 안 보임)</span><textarea class="textarea" name="t" maxlength="300" style="min-height:100px">${esc(cur)}</textarea></label><div><button class="btn btn--gold">저장</button></div></form>`;
-      $('#nf').onsubmit = e => { e.preventDefault(); run(e.submitter, async () => { await S.setNotice(new FormData(e.target).get('t').trim()); toast('공지 저장했어'); }); }; }
+      $('#nf').onsubmit = e => { e.preventDefault(); run(e.submitter, async () => { await S.setNotice(new FormData(e.target).get('t').trim()); toast('공지를 저장했다거'); }); }; }
     const again = () => admin(tab);
     $$('[data-st]', body).forEach(b => b.onclick = () => run(b, async () => { await S.setStatus(b.dataset.u, b.dataset.st); again(); }));
     const purge = $('#purge', body);
-    if (purge) purge.onclick = () => { if (confirm(`거절된 사람 ${rejected.length}명을 삭제할까?\n계정째로 지워져서 되돌릴 수 없어.`)) run(purge, async () => { const n = await S.deleteRejected(); toast(`${n}명 삭제했어`); again(); }); };
-    $$('[data-del]', body).forEach(b => b.onclick = () => { if (confirm(`${b.dataset.name} 을(를) 삭제할까?\n계정째로 지워져서 되돌릴 수 없어.`)) run(b, async () => { await S.deleteRejected(b.dataset.del); toast('삭제했어'); again(); }); });
-    $$('[data-role]', body).forEach(b => b.onclick = () => { if (confirm(b.textContent.trim() + ' 할까?')) run(b, async () => { await S.setRole(b.dataset.u, b.dataset.role); again(); }); });
+    if (purge) purge.onclick = () => { if (confirm(`거절된 사람 ${rejected.length}명을 삭제하겠냐거?\n계정째로 지워져서 되돌릴 수 없다거.`)) run(purge, async () => { const n = await S.deleteRejected(); toast(`${n}명 삭제했다거`); again(); }); };
+    $$('[data-del]', body).forEach(b => b.onclick = () => { if (confirm(`${b.dataset.name} 을(를) 삭제하겠냐거?\n계정째로 지워져서 되돌릴 수 없다거.`)) run(b, async () => { await S.deleteRejected(b.dataset.del); toast('삭제했다거'); again(); }); });
+    $$('[data-role]', body).forEach(b => b.onclick = () => { if (confirm(b.textContent.trim() + ' 하겠냐거?')) run(b, async () => { await S.setRole(b.dataset.u, b.dataset.role); again(); }); });
     $$('[data-pw]', body).forEach(b => b.onclick = () => {
-      const d = sheet(`<h2>비밀번호 재설정</h2><p>${esc(b.dataset.name)} 의 새 비밀번호를 적어줘. 기존 비밀번호는 누구도 볼 수 없고, 새로 정해주는 것만 돼.</p>
+      const d = sheet(`<h2>비밀번호 재설정</h2><p>${esc(b.dataset.name)} 의 새 비밀번호를 적으라거. 기존 비밀번호는 누구도 볼 수 없고, 새로 정해주는 것만 된다거.</p>
         <form id="rp"><input class="input" name="pw" required minlength="${S.live ? 6 : 1}" placeholder="새 비밀번호" autocomplete="off" autofocus><div class="acts"><button type="button" class="btn btn--plain" data-close>취소</button><button class="btn btn--gold">재설정</button></div></form>`);
-      $('#rp', d).onsubmit = e => { e.preventDefault(); const pw = new FormData(e.target).get('pw'); run(e.submitter, async () => { await S.resetPassword(b.dataset.pw, pw); d.close(); toast('재설정했어. 본인에게 알려줘'); }); };
+      $('#rp', d).onsubmit = e => { e.preventDefault(); const pw = new FormData(e.target).get('pw'); run(e.submitter, async () => { await S.resetPassword(b.dataset.pw, pw); d.close(); toast('재설정했다거. 본인에게 알려주라거'); }); };
     });
-    $$('[data-dp]', body).forEach(b => b.onclick = () => { if (confirm('이 글을 지울까?')) run(b, async () => { await S.deletePost(rid(b.dataset.dp)); again(); }); });
-    $$('[data-dr]', body).forEach(b => b.onclick = () => { if (confirm('이 모집을 지울까?')) run(b, async () => { await S.deleteRaid(rid(b.dataset.dr)); again(); }); });
+    $$('[data-dp]', body).forEach(b => b.onclick = () => { if (confirm('이 글을 지우겠냐거?')) run(b, async () => { await S.deletePost(rid(b.dataset.dp)); again(); }); });
+    $$('[data-dr]', body).forEach(b => b.onclick = () => { if (confirm('이 모집을 지우겠냐거?')) run(b, async () => { await S.deleteRaid(rid(b.dataset.dr)); again(); }); });
     const q = $('#q', body); if (q) q.oninput = () => { const v = q.value.trim().toLowerCase(); $$('tbody tr', body).forEach(tr => tr.hidden = v && !tr.textContent.toLowerCase().includes(v)); };
   }
 
@@ -546,7 +549,7 @@
     d.addEventListener('close', () => { chatPeer = null; if (location.hash.startsWith('#/msg')) route(); }, { once: true });
     const load = async () => {
       const ms = await S.listMessages(peer.id), box = $('#chat', d); if (!box) return;
-      box.innerHTML = ms.length ? ms.map(m => `<div class="bub ${m.from_id === me().id ? 'mine' : ''}"><p>${esc(m.body)}</p><small>${ago(m.created_at)}</small></div>`).join('') : '<p class="mut" style="margin:auto">아직 주고받은 쪽지가 없어</p>';
+      box.innerHTML = ms.length ? ms.map(m => `<div class="bub ${m.from_id === me().id ? 'mine' : ''}"><p>${esc(m.body)}</p><small>${ago(m.created_at)}</small></div>`).join('') : '<p class="mut" style="margin:auto">아직 주고받은 쪽지가 없다거</p>';
       box.scrollTop = box.scrollHeight;
       if (ms.some(m => m.to_id === me().id && !m.read_at)) await S.markRead(peer.id);
     };
@@ -561,9 +564,9 @@
       <section class="sec"><div class="sec__h"><h2>주고받은 쪽지</h2></div><div class="list" id="th"><div class="mut">불러오는 중</div></div></section>
       <section class="sec"><div class="sec__h"><h2>상회원에게 보내기</h2></div><div class="list" id="mem"></div></section></div>`;
     const [ths, mem] = await Promise.all([S.listThreads(), S.listMembers()]), on = new Set(S.online().map(p => p.id));
-    $('#th').innerHTML = ths.length ? ths.map((t, i) => `<a href="#" data-t="${i}">${avatar(t.peer)}<span class="t">${esc(nick(t.peer))} <span class="mut" style="font-weight:500">${esc(t.last.body.slice(0, 40))}</span></span>${t.unread ? `<b class="tag tag--red">새 쪽지 ${t.unread}</b>` : ''}<span class="m">${ago(t.last.created_at)}</span></a>`).join('') : '<div class="mut">아직 쪽지가 없어</div>';
+    $('#th').innerHTML = ths.length ? ths.map((t, i) => `<a href="#" data-t="${i}">${avatar(t.peer)}<span class="t">${esc(nick(t.peer))} <span class="mut" style="font-weight:500">${esc(t.last.body.slice(0, 40))}</span></span>${t.unread ? `<b class="tag tag--red">새 쪽지 ${t.unread}</b>` : ''}<span class="m">${ago(t.last.created_at)}</span></a>`).join('') : '<div class="mut">아직 쪽지가 없다거</div>';
     const others = mem.filter(p => p.id !== me().id);
-    $('#mem').innerHTML = others.length ? others.map((p, i) => `<a href="#" data-m="${i}">${avatar(p)}<span class="t">${esc(nick(p))}</span>${on.has(p.id) ? '<span class="tag tag--teal">접속 중</span>' : ''}<span class="m">${esc(p.job || '')}</span></a>`).join('') : '<div class="mut">다른 상회원이 아직 없어</div>';
+    $('#mem').innerHTML = others.length ? others.map((p, i) => `<a href="#" data-m="${i}">${avatar(p)}<span class="t">${esc(nick(p))}</span>${on.has(p.id) ? '<span class="tag tag--teal">접속 중</span>' : ''}<span class="m">${esc(p.job || '')}</span></a>`).join('') : '<div class="mut">다른 상회원이 아직 없다거</div>';
     $$('[data-t]').forEach(a => a.onclick = e => { e.preventDefault(); const t = ths[Number(a.dataset.t)]; openChat({ ...t.peer, id: t.peer_id }); });
     $$('[data-m]').forEach(a => a.onclick = e => { e.preventDefault(); openChat(others[Number(a.dataset.m)]); });
   }
@@ -608,7 +611,7 @@
     if (key === 'intro') { renderPeers(); document.title = '슈고상회 · 아이온2 레기온'; Landing.render(view, { esc, me, enter, toast }); return; }
     refreshUnread(); refreshStatus();
     const tool = key === 'tool' && Tools.get(parts[1]);
-    renderNav(key === 'tool' ? 'tool/' + parts[1] : key === 'post' || key === 'write' ? 'board' : key === 'game' ? 'games' : key);
+    renderNav(key === 'tool' ? 'tools' : key === 'post' || key === 'write' ? 'board' : key === 'game' ? 'games' : key);
     const title = tool ? (tool.full || tool.name) : TITLES[key] || '';
     renderBar(title);
     document.title = (title && key !== 'home' ? title + ' · ' : '') + '슈고상회';
@@ -630,7 +633,7 @@
       else if (key === 'admin') await admin(parts[1]);
       else if (key === 'pending') await pendingPage();
       else go('#/home');
-    } catch (e) { console.error(e); toast('화면을 못 불러왔어: ' + e.message, true); }
+    } catch (e) { console.error(e); toast('화면을 못 불러왔다거: ' + e.message, true); }
     Fx.refresh(view);
   }
   async function refreshPending() {

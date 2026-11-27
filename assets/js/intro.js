@@ -11,9 +11,9 @@
   let stop = null;
 
   const BEATS = [
-    { en: 'Raid Lead', h: ['자리는 우리가', '잡아준다거'], p: '어디 설지 몰라도 된다. 이름만 대면 공대장이 자리부터 정해준다.', img: 'g-leader.webp', alt: '지도를 들고 방향을 가리키는 슈고' },
-    { en: 'Schedule', h: ['시간 되는 날만', '손 들라거'], p: '모집이 뜨면 참여만 누르면 끝. 누가 오는지는 장부에 다 적힌다.', img: 'g-merchant.webp', alt: '장부를 든 슈고 상인' },
-    { en: 'Loot', h: ['먹은 건 다 같이', '호들갑이라거'], p: '혼자 조용히 먹게 안 둔다. 올리면 다 같이 축하한다.', img: 'g-loot.webp', alt: '보석을 번쩍 든 슈고' }
+    { en: 'Raid Lead', h: ['자리는 우리가', '잡아준다거'], p: '어디 설지 몰라도 된다거. 이름만 대면 공대장이 자리부터 정해준다거.', img: 'g-leader.webp', alt: '지도를 들고 방향을 가리키는 슈고' },
+    { en: 'Schedule', h: ['시간 되는 날만', '손 들라거'], p: '모집이 뜨면 참여만 누르면 끝이라거. 누가 오는지는 장부에 다 적힌다거.', img: 'g-merchant.webp', alt: '장부를 든 슈고 상인' },
+    { en: 'Loot', h: ['먹은 건 다 같이', '호들갑이라거'], p: '혼자 조용히 먹게 안 둔다거. 올리면 다 같이 축하한다거~', img: 'g-loot.webp', alt: '보석을 번쩍 든 슈고' }
   ];
   const END = { h: ['한 자리', '비워뒀다거'], p: '구경은 누구나. 상회원은 상회장 승인만 받으면 된다거~' };
 
@@ -50,7 +50,7 @@
 
     <section class="lp-game" id="lpGame" aria-label="미니게임 와르르 슈고">
       <div class="lp-game__in">
-        <div class="lp-game__h"><span>Mini game</span><h2>와르르 슈고</h2><p>가입 없이 바로 한 판. 대기 중인 방을 누르면 바로 들어가. 최대 5명.</p></div>
+        <div class="lp-game__h"><span>Mini game</span><h2>와르르 슈고</h2><p>가입 없이 바로 한 판. 대기 중인 방을 누르면 바로 들어간다거. 최대 5명.</p></div>
         <div id="lpGameBox"></div>
       </div>
     </section>

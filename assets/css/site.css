@@ -655,3 +655,21 @@ body.landing main > * { animation: none; }
 .pend .m { color: var(--mut); font-size: 13px; }
 .pend__b { display: flex; gap: 6px; flex: none; }
 .adm-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.gcard__pic--art { image-rendering: auto; background-position: center; }
+.clock__svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: visible; }
+.ck-ring { fill: none; stroke: var(--line2); stroke-width: .4; stroke-dasharray: 1.5 1.5; }
+.ck-arrow { fill: none; stroke-width: .8; stroke-linecap: round; opacity: .9; }
+.ck-arrow--1, .ck-head--1 { stroke: #e0705c; fill: #e0705c; } .ck-arrow--2, .ck-head--2 { stroke: #4fb8a4; fill: #4fb8a4; } .ck-arrow--0, .ck-head--0 { stroke: var(--gold); fill: var(--gold); }
+.ck-arrow { fill: none !important; }
+.ck-mark circle { fill: rgba(232, 176, 74, .16); stroke: var(--gold); stroke-width: .5; }
+.ck-mark--boss circle { fill: rgba(224, 112, 92, .2); stroke: #e0705c; }
+.ck-mark--heal circle { fill: rgba(79, 184, 164, .18); stroke: #4fb8a4; }
+.ck-mark text { font: 700 3.2px var(--sans); fill: var(--ink); text-anchor: middle; }
+.clock__lg { margin-top: 10px; text-align: center; font-size: 12.5px; color: var(--mut); }
+.clock__lg b { color: var(--ink2); }
+.copy + .copy { margin-top: 10px; }
+.copy__t { display: block; padding: 8px 14px 0; background: var(--bg); font: 800 12px var(--sans); color: var(--gold2); }
+.copy__t + pre { min-height: 0; padding-top: 6px; }
+.cs--sm { width: 24%; gap: 1px; }
+.cs--sm .cs__h { font-size: 10.5px; }
+.cs--sm .cs__n { font-size: 12.5px; padding: 2px 6px; }

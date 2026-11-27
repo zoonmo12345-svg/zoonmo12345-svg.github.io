@@ -23,12 +23,12 @@
   async function enable() {
     const r = await register();
     const perm = await Notification.requestPermission();
-    if (perm !== 'granted') throw new Error('알림이 막혀 있어. 브라우저 설정에서 이 사이트 알림을 허용해줘');
+    if (perm !== 'granted') throw new Error('알림이 막혀 있다거. 브라우저 설정에서 이 사이트 알림을 허용하라거');
     if (pushable && S.live && C.vapidPublicKey) {
       const sub = await r.pushManager.getSubscription() || await r.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(C.vapidPublicKey) });
       await S.savePushSub(sub.toJSON());
     }
-    await show('알림이 켜졌어', '레이드 출발 전에 여기로 알려줄게.', 'test');
+    await show('알림이 켜졌다거', '레이드 출발 전에 여기로 알려준다거~', 'test');
   }
   async function disable() {
     const r = await register(); if (!r) return;
